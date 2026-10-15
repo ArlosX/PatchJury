@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ArrowDown, ArrowRight, ArrowUpRight, Check, ChevronDown, CircleAlert,
   CircleCheck, CircleHelp, CircleX, ClipboardCheck, ExternalLink, FileCode2,
@@ -80,6 +80,28 @@ function App() {
   const [busy, setBusy] = useState(false)
   const [txHash, setTxHash] = useState("")
   const [notice, setNotice] = useState<Notice | null>(null)
+  const composerRef = useRef<HTMLElement>(null)
+  const modalLocked = useRef(false)
+  modalLocked.current = busy || fingerprinting
+
+  useEffect(() => {
+    if (!showComposer) return
+    const previousFocus = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    const frame = requestAnimationFrame(() => composerRef.current?.querySelector<HTMLInputElement>("input")?.focus())
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !modalLocked.current) setShowComposer(false)
+      if (event.key !== "Tab") return
+      const nodes = composerRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), a[href], [tabindex="0"]')
+      if (!nodes?.length) return
+      const first = nodes[0], last = nodes[nodes.length - 1]
+      if (event.shiftKey && (document.activeElement === first || !composerRef.current?.contains(document.activeElement))) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    document.addEventListener("keydown", onKey)
+    return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); previousFocus?.focus() }
+  }, [showComposer])
 
   const selected = useMemo(() => cases.find((item) => item.case_id === selectedId), [cases, selectedId])
   const verdict = selected ? verdicts[selected.case_id] : undefined
@@ -209,7 +231,8 @@ function App() {
   }
 
   return <>
-    <div className="site-shell">
+    <div className="site-shell" inert={showComposer}>
+      <a className="skip-link" href="#release-board">Skip to release board</a>
       <header className="site-header">
         <a href="#top" className="brand" aria-label="PatchJury home"><PatchJuryMark /><span>patchjury<span className="brand-period">.</span></span></a>
         <button className="mobile-menu-btn" aria-label="Toggle navigation" aria-expanded={mobileMenu} onClick={() => setMobileMenu(!mobileMenu)}><Menu size={23} /></button>
@@ -229,24 +252,29 @@ function App() {
       <main id="top">
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-line" /> RELEASE ASSURANCE / POWERED BY GENLAYER</div>
-            <h1 id="hero-title">The code changed.<br /><em>Did the promise hold?</em></h1>
-            <p>AI agents can ship a patch in minutes. PatchJury asks the harder question: does the committed change satisfy the release policy, with credible test evidence and no scope drift?</p>
+            <div className="eyebrow"><span className="eyebrow-line" /> THE RELEASE ASSURANCE WORKSPACE</div>
+            <h1 id="hero-title">Fast patches.<br /><em>Considered releases.</em></h1>
+            <p>Give agent-written code an independent review. Pin the evidence, assess the change through GenLayer, and bring a verifiable decision into your release pipeline.</p>
             <div className="hero-actions"><a href="#release-board" className="button button-primary">Inspect releases <ArrowRight size={18} /></a><a href="#workflow" className="text-link">See how judgment works <ArrowDown size={17} /></a></div>
             <div className="hero-footnote"><ShieldCheck size={17} /> Independent validator assessment. Commit-pinned evidence. A decision your pipeline can read.</div>
           </div>
-          <div className="hero-art" aria-label="Illustration of a patch passing through an evidence gate">
-            <div className="art-topline"><span>PATCHJURY / RELEASE GATE</span><span>01—03</span></div>
-            <div className="rail-diagram">
-              <div className="rail-top"><span className="rail-node">01<span>COMMIT</span></span><span className="rail-track" /><span className="rail-node">02<span>CONSENSUS</span></span><span className="rail-track" /><span className="rail-node">03<span>RELEASE</span></span></div>
-              <div className="rail-big">P<span className="rail-bar">/</span>J</div>
-              <div className="rail-caption">Evidence in. Judgment out.</div>
+          <div className="hero-art" aria-label="Illustrated review workflow, not a live case">
+            <div className="art-topline"><span><GitBranch size={15} /> REVIEW ARCHITECTURE</span><span className="diagram-label">WORKFLOW</span></div>
+            <div className="evidence-stack">
+              <div className="evidence-stack-head"><span>01 / EVIDENCE BUNDLE</span><LockKeyhole size={14} /></div>
+              <div className="diagram-file"><FileCode2 size={18} /><span>Baseline <small>Original implementation</small></span><code>SHA-256</code></div>
+              <div className="diagram-file candidate"><GitBranch size={18} /><span>Candidate <small>Commit-pinned change</small></span><code>SHA-256</code></div>
+              <div className="diagram-file"><ClipboardCheck size={18} /><span>Test evidence <small>Report + GitHub Actions run</small></span><code>CI</code></div>
             </div>
-            <div className="art-bottomline"><span>POLICY + CODE + TESTS</span><Fingerprint size={27} /><span>VERSION 01</span></div>
+            <div className="diagram-connector"><span /><ArrowDown size={15} /><span>Bound to a release policy</span></div>
+            <div className="judgment-engine"><div className="engine-icon"><ShieldCheck size={26} /></div><div><span>02 / INDEPENDENT ASSESSMENT</span><strong>GenLayer judgment</strong><p>Remediation · Regression · Scope</p></div><Fingerprint size={32} className="engine-fingerprint" /></div>
+            <div className="diagram-connector"><span /><ArrowDown size={15} /><span>Recorded onchain</span></div>
+            <div className="diagram-outcomes"><span>03 / DECISION</span><div><span className="outcome-ready">READY</span><span className="outcome-blocked">BLOCKED</span><span>INSUFFICIENT</span></div></div>
+            <div className="art-bottomline"><span>ONE CASE. TRACEABLE EVIDENCE.</span><span>PROTOCOL V1</span></div>
           </div>
         </section>
 
-        <div className="ticker"><span>RELEASES SHOULD HAVE RECEIPTS</span><span>◆</span><span>VALIDATORS CHECK THE SUBSTANCE</span><span>◆</span><span>NO SILENT EVIDENCE REWRITES</span><span>◆</span><span>UNKNOWN IS A REAL OUTCOME</span></div>
+        <div className="ticker"><span><Fingerprint size={17} /> Commit-pinned sources</span><span><GitBranch size={17} /> Independent assessment</span><span><LockKeyhole size={17} /> Immutable case records</span><span><ClipboardCheck size={17} /> CI-readable decisions</span></div>
 
         <section className="workflow section-wrap" id="workflow" aria-labelledby="workflow-title">
           <div className="section-heading"><span className="section-index">01 / THE METHOD</span><h2 id="workflow-title">From agent output<br />to release decision.</h2><p>Three commit-pinned files and a GitHub Actions run form one versioned review. The decision happens inside the Intelligent Contract, where validators independently repeat the assessment.</p></div>
@@ -259,7 +287,7 @@ function App() {
 
         <section className="board-section" id="release-board" aria-labelledby="board-title">
           <div className="section-wrap">
-            <div className="board-heading"><div><span className="section-index">02 / LIVE CONTRACT STATE</span><h2 id="board-title">Release board<span>.</span></h2></div><div className="board-tools"><span>{String(cases.length).padStart(2, "0")} requests <span className="tool-separator">/</span> {String(readyCount).padStart(2, "0")} ready</span><button className="icon-button" title="Refresh contract state" aria-label="Refresh contract state" onClick={() => void refresh()}><RefreshCw size={18} /></button><button className="button button-dark" onClick={() => { setForm(initialForm()); setShowComposer(true) }} disabled={connection !== "ready"}><Plus size={18} /> New review</button></div></div>
+            <div className="board-heading"><div><span className="section-index">02 / LIVE CONTRACT STATE</span><h2 id="board-title">Release board<span>.</span></h2></div><div className="board-tools"><span>{connection === "ready" ? String(cases.length).padStart(2, "0") : "—"} requests <span className="tool-separator">/</span> {connection === "ready" ? String(readyCount).padStart(2, "0") : "—"} ready</span><button className="icon-button" title="Refresh contract state" aria-label="Refresh contract state" disabled={connection === "checking"} onClick={() => void refresh()}><RefreshCw size={18} /></button><button className="button button-dark" onClick={() => { setForm(initialForm()); setShowComposer(true) }}><Plus size={18} /> New review</button></div></div>
 
             {connection !== "ready" && <div className="state-banner"><CircleAlert size={19} /><div><strong>{connection === "unconfigured" ? "Contract deployment is pending" : connection === "checking" ? "Reading StudioNet" : "Could not read the contract"}</strong><p>{connection === "unconfigured" ? "The interface is ready for a GenLayer address. No onchain release results are shown until a matching contract is deployed." : connection === "checking" ? "Loading the protocol version and published receipts." : "Check the RPC connection and the configured contract address, then refresh."}</p></div></div>}
 
@@ -269,9 +297,9 @@ function App() {
             <div className="board-layout">
               <div className="case-list" aria-label="Release requests">
                 <div className="list-label"><span>REQUESTS</span><span>{String(cases.length).padStart(2, "0")}</span></div>
-                {cases.length ? cases.map((item, index) => <button key={item.case_id} className={`case-row ${item.case_id === selectedId ? "active" : ""}`} onClick={() => setSelectedId(item.case_id)}>
+                {cases.length ? cases.map((item, index) => <button key={item.case_id} className={`case-row ${item.case_id === selectedId ? "active" : ""}`} aria-pressed={item.case_id === selectedId} onClick={() => setSelectedId(item.case_id)}>
                   <span className="row-counter">{String(index + 1).padStart(2, "0")}</span><span className="row-main"><strong>{item.title}</strong><small>{item.repo_url.replace("https://github.com/", "")}</small></span><span className={`row-status ${verdicts[item.case_id]?.decision?.toLowerCase() || "waiting"}`} /><ArrowRight size={17} className="row-arrow" />
-                </button>) : <div className="case-empty"><div className="empty-symbol"><LockKeyhole size={24} /></div><strong>No release requests yet</strong><p>The board only shows records read from the deployed contract. Register the first commit-pinned case to begin.</p></div>}
+                </button>) : <div className="case-empty"><div className="empty-symbol"><LockKeyhole size={24} /></div><strong>{connection === "ready" ? "No release requests yet" : "Waiting for contract data"}</strong><p>{connection === "ready" ? "Register the first commit-pinned case to begin. Only onchain records appear here." : "Records will appear when the contract connection is restored. You can prepare a new request in the meantime."}</p></div>}
               </div>
 
               <div className="case-detail">
@@ -283,7 +311,7 @@ function App() {
                   {verdict && <div className="verdict-reason"><span>RECORDED REASON</span><p>{verdict.reason}</p><div className="quote-grid"><blockquote><span>CANDIDATE EXCERPT</span>{verdict.candidate_quote || "No excerpt supplied."}</blockquote><blockquote><span>TEST EXCERPT</span>{verdict.test_quote || "No excerpt supplied."}</blockquote></div></div>}
                   <details className="evidence-details"><summary>Inspect locked evidence <ChevronDown size={17} /></summary><div><p><strong>Policy</strong><br />{selected.release_policy}</p><a href={selected.baseline_url} target="_blank" rel="noreferrer">Baseline source <ExternalLink size={14} /></a><code>SHA-256 {selected.baseline_sha256}</code><a href={selected.candidate_url} target="_blank" rel="noreferrer">Candidate source <ExternalLink size={14} /></a><code>SHA-256 {selected.candidate_sha256}</code><a href={selected.test_report_url} target="_blank" rel="noreferrer">Test report <ExternalLink size={14} /></a><code>SHA-256 {selected.test_report_sha256}</code><a href={selected.ci_run_url.replace("api.github.com/repos/", "github.com/")} target="_blank" rel="noreferrer">GitHub Actions run <ExternalLink size={14} /></a><code>COMMIT {selected.candidate_commit}</code>{verdict && <code>CI {verdict.ci_status.toUpperCase()} / {verdict.ci_conclusion.toUpperCase()}</code>}<span className="commitment">CASE COMMITMENT {selected.commitment}</span></div></details>
                   <div className="detail-actions"><a href={selected.repo_url} target="_blank" rel="noreferrer" className="quiet-link">Open repository <ArrowUpRight size={15} /></a>{!verdict && <button className="button button-primary" onClick={() => void runReview()} disabled={busy || connection !== "ready"}>{busy ? "Waiting for finality…" : "Run GenLayer review"}<ArrowRight size={17} /></button>}{verdict && <button className="button button-outline" onClick={() => startRevision(selected)}>Submit revision <ArrowRight size={16} /></button>}</div>
-                </> : <div className="detail-placeholder"><span className="oversized-number">00</span><h3>Evidence becomes a decision here.</h3><p>Select an onchain case to inspect its sources, independent criteria and release status.</p><ArrowDown size={24} /></div>}
+                </> : <div className="detail-placeholder"><div className="placeholder-graphic" aria-hidden="true"><FileCode2 size={28} /><span /><ShieldCheck size={32} /><span /><ClipboardCheck size={28} /></div><span className="detail-kicker">YOUR NEXT RELEASE STARTS HERE</span><h3>A clear record.<br />For a considered decision.</h3><p>{cases.length ? "Select a case to inspect its evidence and recorded assessment." : "Start with a policy, two code snapshots and test evidence. Your first review will appear here once it is registered onchain."}</p><div className="empty-checklist"><span><Check size={14} /> Commit-pinned files</span><span><Check size={14} /> Public CI run</span></div></div>}
               </div>
             </div>
           </div>
@@ -294,7 +322,7 @@ function App() {
       <footer className="footer"><div className="footer-brand"><PatchJuryMark /> patchjury.</div><p>Release decisions with receipts. Built on GenLayer.</p><span>PROTOCOL V1 / PUBLIC EVIDENCE ONLY</span></footer>
     </div>
 
-    {showComposer && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) setShowComposer(false) }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-head"><div><span className="detail-kicker">NEW RELEASE REQUEST</span><h2 id="composer-title">Pin the promise.<br />Pin the proof.</h2></div><button className="icon-button" aria-label="Close request form" disabled={busy} onClick={() => setShowComposer(false)}><X size={22} /></button></div><p className="composer-intro">The case can be reviewed once. To change evidence or policy later, submit a linked revision.</p><div className="form-grid"><label className="form-field"><span>Release title</span><input value={form.title} maxLength={160} onChange={(event) => updateForm("title", event.target.value)} placeholder="Patch parser boundary in v2.4" /></label><label className="form-field"><span>Case ID</span><input value={form.case_id} maxLength={64} onChange={(event) => updateForm("case_id", event.target.value)} /></label><label className="form-field full"><span>GitHub repository</span><input value={form.repo_url} onChange={(event) => updateForm("repo_url", event.target.value)} placeholder="https://github.com/owner/repository" /></label><label className="form-field full"><span>Release policy / promised outcome</span><textarea value={form.release_policy} maxLength={1500} onChange={(event) => updateForm("release_policy", event.target.value)} placeholder="Specify the required fix, tests that must pass, and changes that must stay out of scope." rows={5} /><small>{form.release_policy.length}/1500 characters</small></label>{sourceKeys.map((key, index) => <div className="source-form" key={key}><div className="source-form-title"><span>0{index + 1}</span><strong>{sourceLabels[key]}</strong></div><label className="form-field"><span>Commit-pinned raw URL</span><input value={form[`${key}_url`]} onChange={(event) => updateForm(`${key}_url`, event.target.value)} placeholder="https://raw.githubusercontent.com/owner/repo/40-char-commit/path" /></label><label className="form-field"><span>SHA-256</span><input value={form[`${key}_sha256`]} onChange={(event) => updateForm(`${key}_sha256`, event.target.value.toLowerCase())} placeholder="Fetch automatically or paste lowercase digest" /></label></div>)}<label className="form-field full"><span>GitHub Actions run API URL</span><input value={form.ci_run_url} onChange={(event) => updateForm("ci_run_url", event.target.value)} placeholder="https://api.github.com/repos/owner/repo/actions/runs/123456" /><small>Use a completed run for the candidate commit. The run and candidate must belong to the repository above.</small></label></div><div className="composer-bottom"><div><button className="button button-outline" onClick={() => void fingerprintSources()} disabled={fingerprinting || busy}>{fingerprinting ? "Fingerprinting…" : "Fetch & fingerprint sources"}<Fingerprint size={17} /></button><p>Files must be public UTF-8 text, at most 12 KB each. Candidate and report must use the same 40-character commit SHA.</p></div><button className="button button-primary" onClick={() => void register()} disabled={busy || connection !== "ready"}>{busy ? "Waiting for finality…" : "Register on GenLayer"}<ArrowRight size={17} /></button></div>{notice && <div role="status" className={`notice ${notice.kind}`}>{notice.text}</div>}{txHash && <div className="tx-note"><code>{txHash}</code><span>Do not retry while this transaction is pending.</span></div>}</section></div>}
+    {showComposer && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy && !fingerprinting) setShowComposer(false) }}><section ref={composerRef} className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-head"><div><span className="detail-kicker">NEW RELEASE REQUEST</span><h2 id="composer-title">Pin the promise.<br />Pin the proof.</h2></div><button className="icon-button" aria-label="Close request form" disabled={busy || fingerprinting} onClick={() => setShowComposer(false)}><X size={22} /></button></div><p className="composer-intro">The case can be reviewed once. To change evidence or policy later, submit a linked revision.</p><div className="form-grid"><label className="form-field"><span>Release title</span><input value={form.title} maxLength={160} onChange={(event) => updateForm("title", event.target.value)} placeholder="Patch parser boundary in v2.4" /></label><label className="form-field"><span>Case ID</span><input value={form.case_id} maxLength={64} onChange={(event) => updateForm("case_id", event.target.value)} /></label><label className="form-field full"><span>GitHub repository</span><input value={form.repo_url} onChange={(event) => updateForm("repo_url", event.target.value)} placeholder="https://github.com/owner/repository" /></label><label className="form-field full"><span>Release policy / promised outcome</span><textarea value={form.release_policy} maxLength={1500} onChange={(event) => updateForm("release_policy", event.target.value)} placeholder="Specify the required fix, tests that must pass, and changes that must stay out of scope." rows={5} /><small>{form.release_policy.length}/1500 characters</small></label>{sourceKeys.map((key, index) => <div className="source-form" key={key}><div className="source-form-title"><span>0{index + 1}</span><strong>{sourceLabels[key]}</strong></div><label className="form-field"><span>Commit-pinned raw URL</span><input value={form[`${key}_url`]} onChange={(event) => updateForm(`${key}_url`, event.target.value)} placeholder="https://raw.githubusercontent.com/owner/repo/40-char-commit/path" /></label><label className="form-field"><span>SHA-256</span><input value={form[`${key}_sha256`]} onChange={(event) => updateForm(`${key}_sha256`, event.target.value.toLowerCase())} placeholder="Fetch automatically or paste lowercase digest" /></label></div>)}<label className="form-field full"><span>GitHub Actions run API URL</span><input value={form.ci_run_url} onChange={(event) => updateForm("ci_run_url", event.target.value)} placeholder="https://api.github.com/repos/owner/repo/actions/runs/123456" /><small>Use a completed run for the candidate commit. The run and candidate must belong to the repository above.</small></label></div><div className="composer-bottom"><div><button className="button button-outline" onClick={() => void fingerprintSources()} disabled={fingerprinting || busy}>{fingerprinting ? "Fingerprinting…" : "Fetch & fingerprint sources"}<Fingerprint size={17} /></button><p>Files must be public UTF-8 text, at most 12 KB each. Candidate and report must use the same 40-character commit SHA.</p></div><button className="button button-primary" onClick={() => void register()} disabled={busy || connection !== "ready"}>{busy ? "Waiting for finality…" : "Register on GenLayer"}<ArrowRight size={17} /></button></div>{notice && <div role="status" className={`notice ${notice.kind}`}>{notice.text}</div>}{txHash && <div className="tx-note"><code>{txHash}</code><span>Do not retry while this transaction is pending.</span></div>}</section></div>}
   </>
 }
 
