@@ -4,7 +4,7 @@
 
 PatchJury asks a narrow, consequential question: does this exact committed candidate satisfy a maintainer's release policy, and does a pinned test report provide enough evidence to ship it? A GenLayer Intelligent Contract reads the public sources and the associated GitHub Actions run, has validators independently assess the same material, and records a structured `READY`, `BLOCKED`, or `INSUFFICIENT` verdict. A read-only CI gate checks the finalized verdict, successful CI run, Git commit and local file bytes before allowing a release job to continue.
 
-This is a new project, separate from Genlos and Faultline. It is **not yet deployed**. The UI intentionally shows no fabricated cases or scores before a contract is configured.
+This is a new project, separate from Genlos and Faultline. The contract is deployed on StudioNet at `0xDD7c6fa8605d04C366B998e7c9A4BA398F720d94`. Its schema and `get_protocol()` response were checked against StudioNet. No release cases or verdicts have been registered yet; the UI does not fabricate them.
 
 ## Why GenLayer is central
 
@@ -39,9 +39,9 @@ npm run build
 npm run schema:check
 ```
 
-Copy `.env.example` to `.env.local` when a v1 contract is deployed and set `VITE_PATCHJURY_CONTRACT_ADDRESS`. The default RPC is GenLayer StudioNet. The frontend holds no private keys.
+Development and production builds use `.env.development` and `.env.production` to point to the deployed StudioNet contract. To use a different deployment locally, copy `.env.example` to `.env.local` and set `VITE_PATCHJURY_CONTRACT_ADDRESS`. The default RPC is GenLayer StudioNet. The frontend holds no private keys.
 
-The contract source is [`contracts/patchjury.py`](contracts/patchjury.py). Use GenLayer Studio or the CLI to deploy it to StudioNet. Before publishing the site, verify `get_protocol()` returns `patchjury-v1`; then configure the deployed address, rebuild and publish `dist/`. The public site must be available over HTTPS for reviewers, and any evidence files must be independently accessible to GenLayer validators. A deployment address or transaction is deliberately absent from this README until verified.
+The contract source is [`contracts/patchjury.py`](contracts/patchjury.py). StudioNet reports `patchjury-v1` from `get_protocol()` at the deployed address above. Build and publish `dist/` over HTTPS. Evidence files must be independently accessible to GenLayer validators. The deployment address is verified by a read; a release review is not yet verified until a real case reaches a finalized verdict.
 
 If Studio shows `Could not load contract schema`, run `npm run schema:check` first. This queries StudioNet with the exact local source without deploying. If it succeeds, reopen the Contracts view, remove the stale Studio editor copy, import the file from `contracts/patchjury.py` again, and return to Run and Debug. Do not edit the first `Depends` line or replace its pinned runner hash. A successful schema check does not prove deployment or execution success.
 
