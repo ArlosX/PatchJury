@@ -34,11 +34,16 @@ Requires Node.js 22 or later.
 npm ci
 npm run dev
 npm run build
+
+# Check the exact contract source against the StudioNet schema endpoint
+npm run schema:check
 ```
 
 Copy `.env.example` to `.env.local` when a v1 contract is deployed and set `VITE_PATCHJURY_CONTRACT_ADDRESS`. The default RPC is GenLayer StudioNet. The frontend holds no private keys.
 
 The contract source is [`contracts/patchjury.py`](contracts/patchjury.py). Use GenLayer Studio or the CLI to deploy it to StudioNet. Before publishing the site, verify `get_protocol()` returns `patchjury-v1`; then configure the deployed address, rebuild and publish `dist/`. The public site must be available over HTTPS for reviewers, and any evidence files must be independently accessible to GenLayer validators. A deployment address or transaction is deliberately absent from this README until verified.
+
+If Studio shows `Could not load contract schema`, run `npm run schema:check` first. This queries StudioNet with the exact local source without deploying. If it succeeds, reopen the Contracts view, remove the stale Studio editor copy, import the file from `contracts/patchjury.py` again, and return to Run and Debug. Do not edit the first `Depends` line or replace its pinned runner hash. A successful schema check does not prove deployment or execution success.
 
 ## CI gate
 
