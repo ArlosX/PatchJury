@@ -1,14 +1,14 @@
-# Proofrail
+# PatchJury
 
 **Release decisions with receipts for agent-authored code.**
 
-Proofrail asks a narrow, consequential question: does this exact committed candidate satisfy a maintainer's release policy, and does a pinned test report provide enough evidence to ship it? A GenLayer Intelligent Contract reads the public sources and the associated GitHub Actions run, has validators independently assess the same material, and records a structured `READY`, `BLOCKED`, or `INSUFFICIENT` verdict. A read-only CI gate checks the finalized verdict, successful CI run, Git commit and local file bytes before allowing a release job to continue.
+PatchJury asks a narrow, consequential question: does this exact committed candidate satisfy a maintainer's release policy, and does a pinned test report provide enough evidence to ship it? A GenLayer Intelligent Contract reads the public sources and the associated GitHub Actions run, has validators independently assess the same material, and records a structured `READY`, `BLOCKED`, or `INSUFFICIENT` verdict. A read-only CI gate checks the finalized verdict, successful CI run, Git commit and local file bytes before allowing a release job to continue.
 
 This is a new project, separate from Genlos and Faultline. It is **not yet deployed**. The UI intentionally shows no fabricated cases or scores before a contract is configured.
 
 ## Why GenLayer is central
 
-A conventional CI check can compare hashes and run known tests. It cannot decide whether an agent's implementation really addresses a natural-language requirement, whether a test report is substantively adequate, or whether the patch drifts outside the agreed scope. Proofrail's three criterion judgments occur inside a GenLayer non-deterministic block. Validators fetch the same commit-pinned files, verify their SHA-256 commitments, independently make the assessment, and compare decision-critical fields. Deterministic code derives the release decision from those fields.
+A conventional CI check can compare hashes and run known tests. It cannot decide whether an agent's implementation really addresses a natural-language requirement, whether a test report is substantively adequate, or whether the patch drifts outside the agreed scope. PatchJury's three criterion judgments occur inside a GenLayer non-deterministic block. Validators fetch the same commit-pinned files, verify their SHA-256 commitments, independently make the assessment, and compare decision-critical fields. Deterministic code derives the release decision from those fields.
 
 | Criterion | `PASS` | `FAIL` | `UNKNOWN` |
 | --- | --- | --- | --- |
@@ -21,7 +21,7 @@ A conventional CI check can compare hashes and run known tests. It cannot decide
 ## Product flow
 
 1. The maintainer prepares a public repository with baseline code, candidate code and a test report at commit-pinned `raw.githubusercontent.com` URLs. Candidate and report must use the same commit. A GitHub Actions workflow runs on that commit.
-2. The maintainer writes the release policy in Proofrail and registers the three URLs with their SHA-256 hashes plus the public run API URL (`https://api.github.com/repos/OWNER/REPO/actions/runs/RUN_ID`). The request is immutable.
+2. The maintainer writes the release policy in PatchJury and registers the three URLs with their SHA-256 hashes plus the public run API URL (`https://api.github.com/repos/OWNER/REPO/actions/runs/RUN_ID`). The request is immutable.
 3. Anyone can request a GenLayer review. The contract reads all three files and the workflow run, confirms the run belongs to the declared repository and candidate commit, and produces an onchain verdict after consensus. The app waits for finalization and shows only finalized state.
 4. The release job runs `scripts/release-gate.mjs`. It exits successfully only if the finalized verdict is `READY`, every criterion is `PASS`, the case and verdict commitments match, the workflow completed successfully for the checked-out `HEAD`, Git `origin` matches the declared repository, and the local candidate file's hash matches the reviewed bytes.
 5. New evidence or code goes into a new case with `parent_id`, preserving the history. The original author alone may register a revision for the same repository.
@@ -36,19 +36,19 @@ npm run dev
 npm run build
 ```
 
-Copy `.env.example` to `.env.local` when a v1 contract is deployed and set `VITE_PROOFRAIL_CONTRACT_ADDRESS`. The default RPC is GenLayer StudioNet. The frontend holds no private keys.
+Copy `.env.example` to `.env.local` when a v1 contract is deployed and set `VITE_PATCHJURY_CONTRACT_ADDRESS`. The default RPC is GenLayer StudioNet. The frontend holds no private keys.
 
-The contract source is [`contracts/proofrail.py`](contracts/proofrail.py). Use GenLayer Studio or the CLI to deploy it to StudioNet. Before publishing the site, verify `get_protocol()` returns `proofrail-v1`; then configure the deployed address, rebuild and publish `dist/`. The public site must be available over HTTPS for reviewers, and any evidence files must be independently accessible to GenLayer validators. A deployment address or transaction is deliberately absent from this README until verified.
+The contract source is [`contracts/patchjury.py`](contracts/patchjury.py). Use GenLayer Studio or the CLI to deploy it to StudioNet. Before publishing the site, verify `get_protocol()` returns `patchjury-v1`; then configure the deployed address, rebuild and publish `dist/`. The public site must be available over HTTPS for reviewers, and any evidence files must be independently accessible to GenLayer validators. A deployment address or transaction is deliberately absent from this README until verified.
 
 ## CI gate
 
-Set `PROOFRAIL_CONTRACT_ADDRESS` to the deployed v1 contract. Run the gate **from the target repository** at the exact release commit:
+Set `PATCHJURY_CONTRACT_ADDRESS` to the deployed v1 contract. Run the gate **from the target repository** at the exact release commit:
 
 ```bash
-node /path/to/proofrail/scripts/release-gate.mjs REL-CASE-ID path/to/candidate-file
+node /path/to/patchjury/scripts/release-gate.mjs REL-CASE-ID path/to/candidate-file
 ```
 
-The target repository must have `genlayer-js` installed for the gate script or bundle the gate with its dependencies. [`examples/release-workflow.yml`](examples/release-workflow.yml) is an integration outline; adapt it to the target repository's layout and protect its release workflow with branch rules. Merely deploying Proofrail does not block releases in unrelated repositories.
+The target repository must have `genlayer-js` installed for the gate script or bundle the gate with its dependencies. [`examples/release-workflow.yml`](examples/release-workflow.yml) is an integration outline; adapt it to the target repository's layout and protect its release workflow with branch rules. Merely deploying PatchJury does not block releases in unrelated repositories.
 
 ## Evidence and threat model
 

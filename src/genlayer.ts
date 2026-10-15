@@ -1,6 +1,6 @@
 import { TransactionHashVariant, type CalldataEncodable } from "genlayer-js/types"
 
-export const contractAddress = import.meta.env.VITE_PROOFRAIL_CONTRACT_ADDRESS || ""
+export const contractAddress = import.meta.env.VITE_PATCHJURY_CONTRACT_ADDRESS || ""
 export const rpcEndpoint = import.meta.env.VITE_GENLAYER_RPC_URL || "https://studio.genlayer.com/api"
 const chainId = 61999
 
@@ -126,12 +126,12 @@ function successfulReturn(receipt: StudioReceipt): boolean {
   ) === true
 }
 
-export class ProofrailClient {
+export class PatchJuryClient {
   private readonly address: `0x${string}`
   private readonly clientPromise: Promise<ReturnType<(typeof import("genlayer-js"))["createClient"]>>
 
   constructor(account?: string) {
-    if (!validAddress(contractAddress)) throw new Error("Proofrail contract is not configured yet.")
+    if (!validAddress(contractAddress)) throw new Error("PatchJury contract is not configured yet.")
     this.address = contractAddress
     this.clientPromise = Promise.all([import("genlayer-js"), import("genlayer-js/chains")]).then(([sdk, chains]) =>
       sdk.createClient({ chain: chains.studionet, endpoint: rpcEndpoint, ...(account ? { account: account as `0x${string}` } : {}) }),

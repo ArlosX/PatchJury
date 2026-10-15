@@ -1,6 +1,6 @@
 # { "Depends": "py-genlayer:1jb45aa8ynh2a9c9xn3b7qqh8sm5q93hwfp7jqmwsfhh8jpz09h6" }
 
-"""Proofrail: a consensus-backed release gate for agent-authored code.
+"""PatchJury: a consensus-backed release gate for agent-authored code.
 
 Every review refers to immutable Git commit URLs and SHA-256 commitments. A
 READY decision is a bounded release-policy assessment, not a security audit.
@@ -12,7 +12,7 @@ import re
 from genlayer import *
 
 
-PROTOCOL_VERSION = "proofrail-v1"
+PROTOCOL_VERSION = "patchjury-v1"
 PROMPT_VERSION = "release-judge-v1"
 MAX_SOURCE_BYTES = 12000
 SOURCE_PATTERN = re.compile(
@@ -20,7 +20,7 @@ SOURCE_PATTERN = re.compile(
 )
 
 
-class Proofrail(gl.Contract):
+class PatchJury(gl.Contract):
     cases: TreeMap[str, str]
     verdicts: TreeMap[str, str]
 

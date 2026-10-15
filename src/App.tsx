@@ -6,7 +6,7 @@ import {
   X,
 } from "lucide-react"
 import {
-  connectWallet, contractAddress, currentAccount, ProofrailClient, sha256FromUrl,
+  connectWallet, contractAddress, currentAccount, PatchJuryClient, sha256FromUrl,
   validAddress, type CaseInput, type Criterion, type Decision, type ReleaseCase,
   type Verdict,
 } from "./genlayer"
@@ -63,7 +63,7 @@ function CriterionRow({ label, value, detail }: { label: string; value?: Criteri
   </div>
 }
 
-function ProofrailMark() {
+function PatchJuryMark() {
   return <span className="brand-mark" aria-hidden="true"><span /><span /><span /></span>
 }
 
@@ -89,9 +89,9 @@ function App() {
     if (!validAddress(contractAddress)) { setConnection("unconfigured"); return }
     setConnection("checking")
     try {
-      const client = new ProofrailClient()
+      const client = new PatchJuryClient()
       const protocol = await client.protocol()
-      if (protocol.version !== "proofrail-v1") throw new Error("The configured address is not a Proofrail v1 contract.")
+      if (protocol.version !== "patchjury-v1") throw new Error("The configured address is not a PatchJury v1 contract.")
       const [nextCases, nextVerdicts] = await Promise.all([client.cases(), client.verdicts()])
       setCases(nextCases)
       setVerdicts(nextVerdicts)
@@ -167,7 +167,7 @@ function App() {
     setBusy(true); setTxHash(""); setNotice(null)
     try {
       const wallet = await ensureAccount()
-      const client = new ProofrailClient(wallet)
+      const client = new PatchJuryClient(wallet)
       await client.register(form, setTxHash)
       setShowComposer(false)
       setNotice({ kind: "success", text: "Release request finalized on GenLayer. Its evidence and policy are now fixed." })
@@ -186,7 +186,7 @@ function App() {
     setBusy(true); setTxHash(""); setNotice(null)
     try {
       const wallet = await ensureAccount()
-      const client = new ProofrailClient(wallet)
+      const client = new PatchJuryClient(wallet)
       await client.review(selected.case_id, setTxHash)
       setNotice({ kind: "success", text: "The GenLayer review finalized. The receipt is now in the release board." })
       await refresh()
@@ -211,7 +211,7 @@ function App() {
   return <>
     <div className="site-shell">
       <header className="site-header">
-        <a href="#top" className="brand" aria-label="Proofrail home"><ProofrailMark /><span>proofrail<span className="brand-period">.</span></span></a>
+        <a href="#top" className="brand" aria-label="PatchJury home"><PatchJuryMark /><span>patchjury<span className="brand-period">.</span></span></a>
         <button className="mobile-menu-btn" aria-label="Toggle navigation" aria-expanded={mobileMenu} onClick={() => setMobileMenu(!mobileMenu)}><Menu size={23} /></button>
         <nav className={mobileMenu ? "nav-open" : ""} aria-label="Primary">
           <a href="#workflow" onClick={() => setMobileMenu(false)}>The method</a>
@@ -231,15 +231,15 @@ function App() {
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-line" /> RELEASE ASSURANCE / POWERED BY GENLAYER</div>
             <h1 id="hero-title">The code changed.<br /><em>Did the promise hold?</em></h1>
-            <p>AI agents can ship a patch in minutes. Proofrail asks the harder question: does the committed change satisfy the release policy, with credible test evidence and no scope drift?</p>
+            <p>AI agents can ship a patch in minutes. PatchJury asks the harder question: does the committed change satisfy the release policy, with credible test evidence and no scope drift?</p>
             <div className="hero-actions"><a href="#release-board" className="button button-primary">Inspect releases <ArrowRight size={18} /></a><a href="#workflow" className="text-link">See how judgment works <ArrowDown size={17} /></a></div>
             <div className="hero-footnote"><ShieldCheck size={17} /> Independent validator assessment. Commit-pinned evidence. A decision your pipeline can read.</div>
           </div>
           <div className="hero-art" aria-label="Illustration of a patch passing through an evidence gate">
-            <div className="art-topline"><span>PROOFRAIL / RELEASE GATE</span><span>01—03</span></div>
+            <div className="art-topline"><span>PATCHJURY / RELEASE GATE</span><span>01—03</span></div>
             <div className="rail-diagram">
               <div className="rail-top"><span className="rail-node">01<span>COMMIT</span></span><span className="rail-track" /><span className="rail-node">02<span>CONSENSUS</span></span><span className="rail-track" /><span className="rail-node">03<span>RELEASE</span></span></div>
-              <div className="rail-big">P<span className="rail-bar">/</span>R</div>
+              <div className="rail-big">P<span className="rail-bar">/</span>J</div>
               <div className="rail-caption">Evidence in. Judgment out.</div>
             </div>
             <div className="art-bottomline"><span>POLICY + CODE + TESTS</span><Fingerprint size={27} /><span>VERSION 01</span></div>
@@ -289,9 +289,9 @@ function App() {
           </div>
         </section>
 
-        <section className="integrate section-wrap" id="integrate" aria-labelledby="integrate-title"><div className="integrate-copy"><span className="section-index">03 / THE CONSEQUENCE</span><h2 id="integrate-title">Let the pipeline<br />read the verdict.</h2><p>Proofrail ships a small release-gate command. Point it at a case ID and the deployed contract. It reads finalized state and exits with a failure code unless the exact commit and CI run have a READY verdict.</p><div className="integrate-note"><CircleAlert size={18} /> It gates a configured CI workflow. It does not control repositories that have not adopted the gate.</div></div><div className="code-card"><div className="code-top"><span><span className="code-dot" /> RELEASE-GATE.MJS</span><span>CI / VERIFY</span></div><pre><code><span className="code-comment"># In your release workflow</span>{"\n"}PROOFRAIL_CONTRACT_ADDRESS=<span className="code-orange">0x…</span> \{"\n"}  npm run gate -- <span className="code-orange">REL-CASE-ID path/to/candidate-file</span>{"\n\n"}<span className="code-comment"># READY + finalized → exit 0</span>{"\n"}<span className="code-comment"># BLOCKED / INSUFFICIENT → exit 1</span></code></pre><div className="code-bottom"><Check size={16} /> No private key needed for the read-only gate</div></div></section>
+        <section className="integrate section-wrap" id="integrate" aria-labelledby="integrate-title"><div className="integrate-copy"><span className="section-index">03 / THE CONSEQUENCE</span><h2 id="integrate-title">Let the pipeline<br />read the verdict.</h2><p>PatchJury ships a small release-gate command. Point it at a case ID and the deployed contract. It reads finalized state and exits with a failure code unless the exact commit and CI run have a READY verdict.</p><div className="integrate-note"><CircleAlert size={18} /> It gates a configured CI workflow. It does not control repositories that have not adopted the gate.</div></div><div className="code-card"><div className="code-top"><span><span className="code-dot" /> RELEASE-GATE.MJS</span><span>CI / VERIFY</span></div><pre><code><span className="code-comment"># In your release workflow</span>{"\n"}PATCHJURY_CONTRACT_ADDRESS=<span className="code-orange">0x…</span> \{"\n"}  npm run gate -- <span className="code-orange">REL-CASE-ID path/to/candidate-file</span>{"\n\n"}<span className="code-comment"># READY + finalized → exit 0</span>{"\n"}<span className="code-comment"># BLOCKED / INSUFFICIENT → exit 1</span></code></pre><div className="code-bottom"><Check size={16} /> No private key needed for the read-only gate</div></div></section>
       </main>
-      <footer className="footer"><div className="footer-brand"><ProofrailMark /> proofrail.</div><p>Release decisions with receipts. Built on GenLayer.</p><span>PROTOCOL V1 / PUBLIC EVIDENCE ONLY</span></footer>
+      <footer className="footer"><div className="footer-brand"><PatchJuryMark /> patchjury.</div><p>Release decisions with receipts. Built on GenLayer.</p><span>PROTOCOL V1 / PUBLIC EVIDENCE ONLY</span></footer>
     </div>
 
     {showComposer && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) setShowComposer(false) }}><section className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-head"><div><span className="detail-kicker">NEW RELEASE REQUEST</span><h2 id="composer-title">Pin the promise.<br />Pin the proof.</h2></div><button className="icon-button" aria-label="Close request form" disabled={busy} onClick={() => setShowComposer(false)}><X size={22} /></button></div><p className="composer-intro">The case can be reviewed once. To change evidence or policy later, submit a linked revision.</p><div className="form-grid"><label className="form-field"><span>Release title</span><input value={form.title} maxLength={160} onChange={(event) => updateForm("title", event.target.value)} placeholder="Patch parser boundary in v2.4" /></label><label className="form-field"><span>Case ID</span><input value={form.case_id} maxLength={64} onChange={(event) => updateForm("case_id", event.target.value)} /></label><label className="form-field full"><span>GitHub repository</span><input value={form.repo_url} onChange={(event) => updateForm("repo_url", event.target.value)} placeholder="https://github.com/owner/repository" /></label><label className="form-field full"><span>Release policy / promised outcome</span><textarea value={form.release_policy} maxLength={1500} onChange={(event) => updateForm("release_policy", event.target.value)} placeholder="Specify the required fix, tests that must pass, and changes that must stay out of scope." rows={5} /><small>{form.release_policy.length}/1500 characters</small></label>{sourceKeys.map((key, index) => <div className="source-form" key={key}><div className="source-form-title"><span>0{index + 1}</span><strong>{sourceLabels[key]}</strong></div><label className="form-field"><span>Commit-pinned raw URL</span><input value={form[`${key}_url`]} onChange={(event) => updateForm(`${key}_url`, event.target.value)} placeholder="https://raw.githubusercontent.com/owner/repo/40-char-commit/path" /></label><label className="form-field"><span>SHA-256</span><input value={form[`${key}_sha256`]} onChange={(event) => updateForm(`${key}_sha256`, event.target.value.toLowerCase())} placeholder="Fetch automatically or paste lowercase digest" /></label></div>)}<label className="form-field full"><span>GitHub Actions run API URL</span><input value={form.ci_run_url} onChange={(event) => updateForm("ci_run_url", event.target.value)} placeholder="https://api.github.com/repos/owner/repo/actions/runs/123456" /><small>Use a completed run for the candidate commit. The run and candidate must belong to the repository above.</small></label></div><div className="composer-bottom"><div><button className="button button-outline" onClick={() => void fingerprintSources()} disabled={fingerprinting || busy}>{fingerprinting ? "Fingerprinting…" : "Fetch & fingerprint sources"}<Fingerprint size={17} /></button><p>Files must be public UTF-8 text, at most 12 KB each. Candidate and report must use the same 40-character commit SHA.</p></div><button className="button button-primary" onClick={() => void register()} disabled={busy || connection !== "ready"}>{busy ? "Waiting for finality…" : "Register on GenLayer"}<ArrowRight size={17} /></button></div>{notice && <div role="status" className={`notice ${notice.kind}`}>{notice.text}</div>}{txHash && <div className="tx-note"><code>{txHash}</code><span>Do not retry while this transaction is pending.</span></div>}</section></div>}

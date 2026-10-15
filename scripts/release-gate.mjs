@@ -2,10 +2,10 @@
 
 /**
  * Read-only CI gate. Run this from the repository being released:
- *   node /path/to/proofrail/scripts/release-gate.mjs CASE_ID path/to/candidate-file
+ *   node /path/to/patchjury/scripts/release-gate.mjs CASE_ID path/to/candidate-file
  *
  * The repository's checked-out HEAD and the candidate file's exact bytes must
- * match the immutable source registered in the finalized Proofrail case.
+ * match the immutable source registered in the finalized PatchJury case.
  */
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
@@ -16,7 +16,7 @@ import { studionet } from 'genlayer-js/chains'
 import { TransactionHashVariant } from 'genlayer-js/types'
 
 function fail(message) {
-  console.error(`PROOFRAIL BLOCKED: ${message}`)
+  console.error(`PATCHJURY BLOCKED: ${message}`)
   process.exit(1)
 }
 
@@ -28,10 +28,10 @@ function normalize(value) {
 }
 
 const [caseId, candidatePath] = process.argv.slice(2)
-const address = process.env.PROOFRAIL_CONTRACT_ADDRESS
+const address = process.env.PATCHJURY_CONTRACT_ADDRESS
 const endpoint = process.env.GENLAYER_RPC_URL || 'https://studio.genlayer.com/api'
 if (!caseId || !candidatePath) fail('usage: release-gate.mjs CASE_ID path/to/candidate-file')
-if (!/^0x[0-9a-fA-F]{40}$/.test(address || '')) fail('set PROOFRAIL_CONTRACT_ADDRESS to the deployed v1 contract')
+if (!/^0x[0-9a-fA-F]{40}$/.test(address || '')) fail('set PATCHJURY_CONTRACT_ADDRESS to the deployed v1 contract')
 if (!/^[A-Za-z0-9_-]{1,64}$/.test(caseId)) fail('invalid case ID')
 
 let localHash
@@ -49,7 +49,7 @@ try {
   const client = createClient({ chain: studionet, endpoint })
   const opts = { address, args: [caseId], transactionHashVariant: TransactionHashVariant.LATEST_FINAL }
   const protocol = normalize(await client.readContract({ address, functionName: 'get_protocol', transactionHashVariant: TransactionHashVariant.LATEST_FINAL }))
-  if (protocol?.version !== 'proofrail-v1') fail('configured address is not a Proofrail v1 contract')
+  if (protocol?.version !== 'patchjury-v1') fail('configured address is not a PatchJury v1 contract')
   const item = normalize(await client.readContract({ ...opts, functionName: 'get_case' }))
   const verdict = normalize(await client.readContract({ ...opts, functionName: 'get_verdict' }))
   if (!item?.case_id || !verdict?.case_id) fail('case or verdict is absent from finalized state')
@@ -66,7 +66,7 @@ try {
   const match = url.pathname.match(/^\/[^/]+\/[^/]+\/([0-9a-f]{40})\/.+$/)
   if (url.hostname !== 'raw.githubusercontent.com' || !match) fail('case candidate is not pinned to a Git commit')
   if (match[1] !== gitHead) fail(`Git HEAD ${gitHead} does not match reviewed commit ${match[1]}`)
-  console.log(`PROOFRAIL READY: ${caseId}`)
+  console.log(`PATCHJURY READY: ${caseId}`)
   console.log(`Contract: ${address}`)
   console.log(`Commit: ${gitHead}`)
   console.log(`File SHA-256: ${localHash}`)
