@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "schema:check": "node scripts/check-schema.mjs",
-    "gate": "node scripts/release-gate.mjs"
+    "gate": "node scripts/release-gate.mjs",
+    "test": "node tests/client.test.cjs && node tests/validation.test.cjs && node tests/gate.test.cjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",

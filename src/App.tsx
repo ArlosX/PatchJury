@@ -11,6 +11,8 @@ import {
   type Verdict,
 } from "./genlayer"
 
+import { validateCaseInput, validateSources } from "./validation"
+
 type Connection = "unconfigured" | "checking" | "ready" | "error"
 type Notice = { kind: "info" | "error" | "success"; text: string }
 type SourceKey = "baseline" | "candidate" | "test_report"
@@ -141,7 +143,11 @@ function App() {
     window.history.replaceState(null, "", url)
   }, [selectedId])
 
-  const updateForm = (field: keyof CaseInput, value: string) => setForm((current) => ({ ...current, [field]: value }))
+  const updateForm = (field: keyof CaseInput, value: string) => setForm((current) => {
+    const next = { ...current, [field]: value }
+    for (const key of sourceKeys) if (field === `${key}_url`) next[`${key}_sha256`] = ""
+    return next
+  })
 
   async function ensureAccount(): Promise<string> {
     // Recheck the active wallet and chain before every write. An already
@@ -152,6 +158,8 @@ function App() {
   }
 
   async function fingerprintSources() {
+    const sourceError = validateSources(form)
+    if (sourceError) { setNotice({ kind: "error", text: sourceError }); return }
     setFingerprinting(true)
     setNotice(null)
     try {
@@ -168,26 +176,8 @@ function App() {
     }
   }
 
-  function validateForm(): string | null {
-    if (!form.title.trim() || !form.release_policy.trim()) return "Add a title and release policy."
-    if (!/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(form.repo_url)) return "Repository must use https://github.com/OWNER/REPO."
-    const [, owner, repo] = form.repo_url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)$/) || []
-    for (const key of sourceKeys) {
-      const url = form[`${key}_url`]
-      const hash = form[`${key}_sha256`]
-      const pattern = new RegExp(`^https://raw\\.githubusercontent\\.com/${owner}/${repo}/[0-9a-f]{40}/[A-Za-z0-9_./-]+$`, "i")
-      if (!pattern.test(url)) return `${sourceLabels[key]} needs a commit-pinned raw URL from the declared repository.`
-      if (!/^[0-9a-f]{64}$/.test(hash)) return `${sourceLabels[key]} needs a lowercase SHA-256 fingerprint.`
-    }
-    const commitFrom = (url: string) => url.match(/^https:\/\/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/([0-9a-f]{40})\//)?.[1]
-    if (commitFrom(form.test_report_url) !== commitFrom(form.candidate_url)) return "Test evidence and candidate code must use the same Git commit."
-    const ciPattern = new RegExp(`^https://api\\.github\\.com/repos/${owner}/${repo}/actions/runs/[0-9]+$`, "i")
-    if (!ciPattern.test(form.ci_run_url)) return "Add the GitHub Actions API URL for the candidate commit's run."
-    return null
-  }
-
   async function register() {
-    const error = validateForm()
+    const error = validateCaseInput(form) || (cases.some(item => item.case_id === form.case_id) ? "This case ID already exists. Use a new ID." : null)
     if (error) { setNotice({ kind: "error", text: error }); return }
     setBusy(true); setTxHash(""); setNotice(null)
     try {
@@ -235,7 +225,7 @@ function App() {
 
   return <>
     <div className="site-shell" inert={showComposer}>
-      <a className="skip-link" href="#release-board">Skip to release board</a>
+      <a className="skip-link" href="#release-board" onClick={() => setWorkspaceView("reviews")}>Skip to release board</a>
       <aside className="workspace-sidebar">
         <a href="#top" className="brand" aria-label="PatchJury home" onClick={() => setWorkspaceView("reviews")}><PatchJuryMark /><span>patchjury<span className="brand-period">.</span></span></a>
         <div className="workspace-name"><span className="workspace-avatar">P</span><div>Release workspace<small>Public · StudioNet</small></div><ChevronDown size={15} /></div>
@@ -250,8 +240,9 @@ function App() {
       <div className="workspace-main">
       <header className="workspace-topbar"><div className="workspace-breadcrumb">Workspace <span>/</span><strong>{workspaceView === "reviews" ? "Release reviews" : workspaceView === "method" ? "Review protocol" : "Pipeline setup"}</strong></div><div className="header-actions"><span className={`network-label ${connection}`}><span className="network-pip" />{connection === "ready" ? "StudioNet connected" : connection === "checking" ? "Connecting…" : connection === "error" ? "Connection unavailable" : "Deployment pending"}</span><button className="wallet-button" onClick={() => { void connectWallet().then(setAccount).catch((error) => setNotice({ kind: "error", text: error.message })) }}>{account ? short(account) : "Connect wallet"}<ArrowUpRight size={15} /></button></div></header>
       <main id="top">
+        {workspaceView !== "reviews" && notice && <div role="status" className={`notice workspace-notice ${notice.kind}`}><span>{notice.text}</span><button aria-label="Dismiss message" onClick={() => setNotice(null)}><X size={17} /></button></div>}
         {workspaceView === "method" && <section className="workflow section-wrap" id="workflow" aria-labelledby="workflow-title">
-          <div className="section-heading"><span className="section-index">01 / THE METHOD</span><h2 id="workflow-title">From agent output<br />to release decision.</h2><p>Three commit-pinned files and a GitHub Actions run form one versioned review. The decision happens inside the Intelligent Contract, where validators independently repeat the assessment.</p></div>
+          <div className="section-heading"><span className="section-index">01 / THE METHOD</span><h1 id="workflow-title">From agent output<br />to release decision.</h1><p>Three commit-pinned files and a GitHub Actions run form one versioned review. The decision happens inside the Intelligent Contract, where validators independently repeat the assessment.</p></div>
           <div className="workflow-grid">
             <article className="workflow-card"><div className="card-number">01</div><FileCode2 size={29} strokeWidth={1.7} /><h3>Fix the evidence</h3><p>Register the policy, baseline, candidate, test report and CI run. Every file points to a Git commit and carries its SHA-256 fingerprint.</p><span className="card-caption">IMMUTABLE INPUTS</span></article>
             <article className="workflow-card"><div className="card-number">02</div><GitBranch size={29} strokeWidth={1.7} /><h3>Judge the change</h3><p>GenLayer reads the files and CI run. Validators independently assess remediation, regression evidence and scope against the same policy.</p><span className="card-caption">INDEPENDENT ASSESSMENT</span></article>
@@ -261,7 +252,7 @@ function App() {
 
         {workspaceView === "reviews" && <section className="board-section" id="release-board" aria-labelledby="board-title">
           <div className="section-wrap">
-            <div className="board-heading"><div><span className="workspace-overline">RELEASE MANAGEMENT</span><h1 id="board-title">Review inbox</h1><p>Track the evidence. Understand the decision. Ship with a record.</p></div><div className="board-tools"><span className="legacy-count">{connection === "ready" ? String(cases.length).padStart(2, "0") : "—"} requests <span className="tool-separator">/</span> {connection === "ready" ? String(readyCount).padStart(2, "0") : "—"} ready</span><button className="icon-button" title="Refresh contract state" aria-label="Refresh contract state" disabled={connection === "checking"} onClick={() => void refresh()}><RefreshCw size={18} /></button><button className="button button-dark" onClick={() => { setForm(initialForm()); setShowComposer(true) }}><Plus size={18} /> New review</button></div></div>
+            <div className="board-heading"><div><span className="workspace-overline">RELEASE MANAGEMENT</span><h1 id="board-title">Review inbox</h1><p>Track the evidence. Understand the decision. Ship with a record.</p></div><div className="board-tools"><span className="legacy-count">{connection === "ready" ? String(cases.length).padStart(2, "0") : "—"} requests <span className="tool-separator">/</span> {connection === "ready" ? String(readyCount).padStart(2, "0") : "—"} ready</span><button className="icon-button" title="Refresh contract state" aria-label="Refresh contract state" disabled={connection === "checking" || busy} onClick={() => void refresh()}><RefreshCw size={18} /></button><button className="button button-dark" onClick={() => { setForm(initialForm()); setShowComposer(true); setNotice(null) }} disabled={busy}><Plus size={18} /> New review</button></div></div>
 
             {connection !== "ready" && <div className="state-banner"><CircleAlert size={19} /><div><strong>{connection === "unconfigured" ? "Contract deployment is pending" : connection === "checking" ? "Reading StudioNet" : "Could not read the contract"}</strong><p>{connection === "unconfigured" ? "The interface is ready for a GenLayer address. No onchain release results are shown until a matching contract is deployed." : connection === "checking" ? "Loading the protocol version and published receipts." : "Check the RPC connection and the configured contract address, then refresh."}</p></div></div>}
 
@@ -293,13 +284,13 @@ function App() {
           </div>
         </section>}
 
-        {workspaceView === "gate" && <section className="integrate section-wrap" id="integrate" aria-labelledby="integrate-title"><div className="integrate-copy"><span className="section-index">03 / THE CONSEQUENCE</span><h2 id="integrate-title">Let the pipeline<br />read the verdict.</h2><p>PatchJury ships a small release-gate command. Point it at a case ID and the deployed contract. It reads finalized state and exits with a failure code unless the exact commit and CI run have a READY verdict.</p><div className="integrate-note"><CircleAlert size={18} /> It gates a configured CI workflow. It does not control repositories that have not adopted the gate.</div></div><div className="code-card"><div className="code-top"><span><span className="code-dot" /> RELEASE-GATE.MJS</span><span>CI / VERIFY</span></div><pre><code><span className="code-comment"># In your release workflow</span>{"\n"}PATCHJURY_CONTRACT_ADDRESS=<span className="code-orange">0x…</span> \{"\n"}  npm run gate -- <span className="code-orange">REL-CASE-ID path/to/candidate-file</span>{"\n\n"}<span className="code-comment"># READY + finalized → exit 0</span>{"\n"}<span className="code-comment"># BLOCKED / INSUFFICIENT → exit 1</span></code></pre><div className="code-bottom"><Check size={16} /> No private key needed for the read-only gate</div></div></section>}
+        {workspaceView === "gate" && <section className="integrate section-wrap" id="integrate" aria-labelledby="integrate-title"><div className="integrate-copy"><span className="section-index">03 / THE CONSEQUENCE</span><h1 id="integrate-title">Let the pipeline<br />read the verdict.</h1><p>PatchJury ships a small release-gate command. Point it at a case ID and the deployed contract. It reads finalized state and exits with a failure code unless the exact commit and CI run have a READY verdict.</p><div className="integrate-note"><CircleAlert size={18} /> It gates a configured CI workflow. It does not control repositories that have not adopted the gate.</div></div><div className="code-card"><div className="code-top"><span><span className="code-dot" /> RELEASE-GATE.MJS</span><span>CI / VERIFY</span></div><pre><code><span className="code-comment"># In your release workflow</span>{"\n"}PATCHJURY_CONTRACT_ADDRESS=<span className="code-orange">0x…</span> \{"\n"}  npm run gate -- <span className="code-orange">REL-CASE-ID path/to/candidate-file</span>{"\n\n"}<span className="code-comment"># READY + finalized → exit 0</span>{"\n"}<span className="code-comment"># BLOCKED / INSUFFICIENT → exit 1</span></code></pre><div className="code-bottom"><Check size={16} /> No private key needed for the read-only gate</div></div></section>}
       </main>
       <footer className="workspace-footer"><span><LockKeyhole size={12} /> Public evidence · Immutable records</span><span>A release-policy assessment, not a security audit.</span></footer>
       </div>
     </div>
 
-    {showComposer && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy && !fingerprinting) setShowComposer(false) }}><section ref={composerRef} className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-head"><div><span className="detail-kicker">NEW RELEASE REQUEST</span><h2 id="composer-title">Create a release review</h2></div><button className="icon-button" aria-label="Close request form" disabled={busy || fingerprinting} onClick={() => setShowComposer(false)}><X size={22} /></button></div><p className="composer-intro">The case can be reviewed once. To change evidence or policy later, submit a linked revision.</p><div className="form-grid"><label className="form-field"><span>Release title</span><input value={form.title} maxLength={160} onChange={(event) => updateForm("title", event.target.value)} placeholder="Patch parser boundary in v2.4" /></label><label className="form-field"><span>Case ID</span><input value={form.case_id} maxLength={64} onChange={(event) => updateForm("case_id", event.target.value)} /></label><label className="form-field full"><span>GitHub repository</span><input value={form.repo_url} onChange={(event) => updateForm("repo_url", event.target.value)} placeholder="https://github.com/owner/repository" /></label><label className="form-field full"><span>Release policy / promised outcome</span><textarea value={form.release_policy} maxLength={1500} onChange={(event) => updateForm("release_policy", event.target.value)} placeholder="Specify the required fix, tests that must pass, and changes that must stay out of scope." rows={5} /><small>{form.release_policy.length}/1500 characters</small></label>{sourceKeys.map((key, index) => <div className="source-form" key={key}><div className="source-form-title"><span>0{index + 1}</span><strong>{sourceLabels[key]}</strong></div><label className="form-field"><span>Commit-pinned raw URL</span><input value={form[`${key}_url`]} onChange={(event) => updateForm(`${key}_url`, event.target.value)} placeholder="https://raw.githubusercontent.com/owner/repo/40-char-commit/path" /></label><label className="form-field"><span>SHA-256</span><input value={form[`${key}_sha256`]} onChange={(event) => updateForm(`${key}_sha256`, event.target.value.toLowerCase())} placeholder="Fetch automatically or paste lowercase digest" /></label></div>)}<label className="form-field full"><span>GitHub Actions run API URL</span><input value={form.ci_run_url} onChange={(event) => updateForm("ci_run_url", event.target.value)} placeholder="https://api.github.com/repos/owner/repo/actions/runs/123456" /><small>Use a completed run for the candidate commit. The run and candidate must belong to the repository above.</small></label></div><div className="composer-bottom"><div><button className="button button-outline" onClick={() => void fingerprintSources()} disabled={fingerprinting || busy}>{fingerprinting ? "Fingerprinting…" : "Fetch & fingerprint sources"}<Fingerprint size={17} /></button><p>Files must be public UTF-8 text, at most 12 KB each. Candidate and report must use the same 40-character commit SHA.</p></div><button className="button button-primary" onClick={() => void register()} disabled={busy || connection !== "ready"}>{busy ? "Waiting for finality…" : "Register on GenLayer"}<ArrowRight size={17} /></button></div>{notice && <div role="status" className={`notice ${notice.kind}`}>{notice.text}</div>}{txHash && <div className="tx-note"><code>{txHash}</code><span>Do not retry while this transaction is pending.</span></div>}</section></div>}
+    {showComposer && <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy && !fingerprinting) setShowComposer(false) }}><section ref={composerRef} className="composer" role="dialog" aria-modal="true" aria-labelledby="composer-title"><div className="composer-head"><div><span className="detail-kicker">NEW RELEASE REQUEST</span><h2 id="composer-title">Create a release review</h2></div><button className="icon-button" aria-label="Close request form" disabled={busy || fingerprinting} onClick={() => setShowComposer(false)}><X size={22} /></button></div><p className="composer-intro">The case can be reviewed once. To change evidence or policy later, submit a linked revision.</p><fieldset className="form-grid" disabled={busy || fingerprinting}><label className="form-field"><span>Release title</span><input value={form.title} maxLength={160} onChange={(event) => updateForm("title", event.target.value)} placeholder="Patch parser boundary in v2.4" /></label><label className="form-field"><span>Case ID</span><input value={form.case_id} maxLength={64} onChange={(event) => updateForm("case_id", event.target.value)} /></label><label className="form-field full"><span>GitHub repository</span><input value={form.repo_url} onChange={(event) => updateForm("repo_url", event.target.value)} placeholder="https://github.com/owner/repository" /></label><label className="form-field full"><span>Release policy / promised outcome</span><textarea value={form.release_policy} maxLength={1500} onChange={(event) => updateForm("release_policy", event.target.value)} placeholder="Specify the required fix, tests that must pass, and changes that must stay out of scope." rows={5} /><small>{form.release_policy.length}/1500 characters</small></label>{sourceKeys.map((key, index) => <div className="source-form" key={key}><div className="source-form-title"><span>0{index + 1}</span><strong>{sourceLabels[key]}</strong></div><label className="form-field"><span>Commit-pinned raw URL</span><input value={form[`${key}_url`]} onChange={(event) => updateForm(`${key}_url`, event.target.value)} placeholder="https://raw.githubusercontent.com/owner/repo/40-char-commit/path" /></label><label className="form-field"><span>SHA-256</span><input value={form[`${key}_sha256`]} onChange={(event) => updateForm(`${key}_sha256`, event.target.value.toLowerCase())} placeholder="Fetch automatically or paste lowercase digest" /></label></div>)}<label className="form-field full"><span>GitHub Actions run API URL</span><input value={form.ci_run_url} onChange={(event) => updateForm("ci_run_url", event.target.value)} placeholder="https://api.github.com/repos/owner/repo/actions/runs/123456" /><small>Use a completed run for the candidate commit. The run and candidate must belong to the repository above.</small></label></fieldset><div className="composer-bottom"><div><button className="button button-outline" onClick={() => void fingerprintSources()} disabled={fingerprinting || busy}>{fingerprinting ? "Fingerprinting…" : "Fetch & fingerprint sources"}<Fingerprint size={17} /></button><p>Files must be public UTF-8 text, at most 12 KB each. Candidate and report must use the same 40-character commit SHA.</p></div><button className="button button-primary" onClick={() => void register()} disabled={busy || fingerprinting || connection !== "ready"}>{busy ? "Waiting for finality…" : "Register on GenLayer"}<ArrowRight size={17} /></button></div>{notice && <div role="status" className={`notice ${notice.kind}`}>{notice.text}</div>}{txHash && <div className="tx-note"><code>{txHash}</code><span>Do not retry while this transaction is pending.</span></div>}</section></div>}
   </>
 }
 

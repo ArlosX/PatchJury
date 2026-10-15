@@ -190,10 +190,14 @@ export class PatchJuryClient {
 }
 
 export async function sha256FromUrl(url: string): Promise<string> {
-  const response = await fetch(url, { cache: "no-store" })
+  const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(20000) })
   if (!response.ok) throw new Error(`Source returned HTTP ${response.status}: ${url}`)
   const bytes = await response.arrayBuffer()
   if (bytes.byteLength === 0 || bytes.byteLength > 12000) throw new Error("Source must contain 1–12,000 bytes.")
+  let text: string
+  try { text = new TextDecoder("utf-8", { fatal: true }).decode(bytes) }
+  catch { throw new Error("Source must be valid UTF-8 text.") }
+  if (!text.trim()) throw new Error("Source must contain non-whitespace text.")
   const hash = await crypto.subtle.digest("SHA-256", bytes)
   return Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, "0")).join("")
 }
