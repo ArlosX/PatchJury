@@ -1,0 +1,24 @@
+# Adapt this outline inside the repository being released. Copy the gate script
+# into its scripts/ directory and add genlayer-js to that repository's package.json.
+# Then commit both the workflow and package-lock.json before using npm ci.
+# Protect the default branch and workflow file against unreviewed edits. The
+# release gate is an opt-in CI control, not an onchain block on other repos.
+name: Proofrail release gate
+on:
+  workflow_dispatch:
+
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Proofrail gate dependencies
+        run: npm ci
+      - name: Require finalized READY verdict for these exact bytes
+        env:
+          PROOFRAIL_CONTRACT_ADDRESS: ${{ vars.PROOFRAIL_CONTRACT_ADDRESS }}
+          GENLAYER_RPC_URL: https://studio.genlayer.com/api
+        run: node scripts/release-gate.mjs REL-CASE-ID path/to/candidate-file
