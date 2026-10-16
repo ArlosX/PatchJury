@@ -4,6 +4,8 @@ Date: 2026-10-16
 Contract: 0xDD7c6fa8605d04C366B998e7c9A4BA398F720d94
 Network: GenLayer StudioNet
 
+This report describes the initial test pass. Its initial empty-contract and mobile limitations below were subsequently superseded: see [LIVE-VERIFICATION.md](LIVE-VERIFICATION.md). All three live decisions and the gate were verified, and the mobile verdict/evidence layout was corrected and inspected at a 360-pixel viewport. The final pre-submission rerun passed all 69 automated tests and the production build.
+
 ## Automated checks
 
 69 automated tests passed:
