@@ -107,9 +107,9 @@ function App() {
     return () => { cancelAnimationFrame(frame); document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", onKey); previousFocus?.focus() }
   }, [showComposer])
 
-  const selected = useMemo(() => cases.find((item) => item.case_id === selectedId), [cases, selectedId])
+  const visibleCases = useMemo(() => cases.filter((item) => `${item.title} ${item.case_id} ${item.repo_url}`.toLowerCase().includes(query.toLowerCase()) && (decisionFilter === "all" || (verdicts[item.case_id]?.decision || "AWAITING") === decisionFilter)), [cases, verdicts, query, decisionFilter])
+  const selected = useMemo(() => visibleCases.find((item) => item.case_id === selectedId) || visibleCases[0], [visibleCases, selectedId])
   const verdict = selected ? verdicts[selected.case_id] : undefined
-  const visibleCases = cases.filter((item) => `${item.title} ${item.case_id} ${item.repo_url}`.toLowerCase().includes(query.toLowerCase()) && (decisionFilter === "all" || (verdicts[item.case_id]?.decision || "AWAITING") === decisionFilter))
   const readyCount = cases.filter((item) => verdicts[item.case_id]?.decision === "READY").length
 
   const refresh = useCallback(async () => {
@@ -137,11 +137,12 @@ function App() {
   }, [refresh])
 
   useEffect(() => {
+    if (connection !== "ready") return
     const url = new URL(window.location.href)
-    if (selectedId) url.searchParams.set("case", selectedId)
+    if (selected) url.searchParams.set("case", selected.case_id)
     else url.searchParams.delete("case")
     window.history.replaceState(null, "", url)
-  }, [selectedId])
+  }, [selected, connection])
 
   const updateForm = (field: keyof CaseInput, value: string) => setForm((current) => {
     const next = { ...current, [field]: value }
@@ -182,9 +183,15 @@ function App() {
     setBusy(true); setTxHash(""); setNotice(null)
     try {
       const wallet = await ensureAccount()
+      if (form.parent_id) {
+        const parent = cases.find(item => item.case_id === form.parent_id)
+        if (!parent || parent.author.toLowerCase() !== wallet.toLowerCase()) throw new Error("Connect the original author's wallet to submit this revision.")
+      }
       const client = new PatchJuryClient(wallet)
       await client.register(form, setTxHash)
       setShowComposer(false)
+      setQuery("")
+      setDecisionFilter("all")
       setNotice({ kind: "success", text: "Release request finalized on GenLayer. Its evidence and policy are now fixed." })
       setSelectedId(form.case_id)
       setForm(initialForm())
@@ -264,12 +271,12 @@ function App() {
             <div className="board-layout">
               <div className="case-list" aria-label="Release requests">
                 <div className="list-label"><span>REQUESTS</span><span>{connection === "ready" ? visibleCases.length : "—"}</span></div>
-                {visibleCases.length ? visibleCases.map((item, index) => <button key={item.case_id} className={`case-row ${item.case_id === selectedId ? "active" : ""}`} aria-pressed={item.case_id === selectedId} onClick={() => setSelectedId(item.case_id)}>
+                {visibleCases.length ? visibleCases.map((item, index) => <button key={item.case_id} className={`case-row ${item.case_id === selected?.case_id ? "active" : ""}`} aria-pressed={item.case_id === selected?.case_id} onClick={() => setSelectedId(item.case_id)}>
                   <span className="row-counter">{String(index + 1).padStart(2, "0")}</span><span className="row-main"><strong>{item.title}</strong><small>{item.repo_url.replace("https://github.com/", "")}</small></span><span className={`row-status ${verdicts[item.case_id]?.decision?.toLowerCase() || "waiting"}`} /><ArrowRight size={17} className="row-arrow" />
                 </button>) : <div className="case-empty"><div className="empty-symbol"><LockKeyhole size={24} /></div><strong>{connection === "ready" ? (cases.length ? "No matching reviews" : "Your inbox is clear") : "Waiting for contract data"}</strong><p>{connection === "ready" ? (cases.length ? "Try another search or status filter." : "Create a review to bring your first release into this workspace.") : "Records will appear when the contract connection is restored. You can prepare a new request in the meantime."}</p></div>}
               </div>
 
-              <div key={selectedId || "empty-dossier"} className="case-detail">
+              <div key={selected?.case_id || "empty-dossier"} className="case-detail">
                 {selected ? <>
                   <div className="detail-head"><span className="detail-kicker">CASE FILE / {selected.case_id}</span><DecisionBadge decision={verdict?.decision} /></div>
                   <h3>{selected.title}</h3><p className="detail-subtitle">{verdict ? "Consensus-backed assessment of a committed release candidate." : "The evidence is fixed. The case is waiting for its first consensus review."}</p>

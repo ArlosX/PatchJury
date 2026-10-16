@@ -93,9 +93,16 @@ export async function connectWallet(): Promise<string> {
           rpcUrls: [rpcEndpoint],
         }],
       })
+      await wallet.request({ method: "wallet_switchEthereumChain", params: [{ chainId: expected }] })
     }
   }
-  return accounts[0]
+  const finalChain = await wallet.request({ method: "eth_chainId" })
+  if (typeof finalChain !== "string" || finalChain.toLowerCase() !== expected.toLowerCase()) {
+    throw new Error("Wallet is not connected to GenLayer StudioNet. Switch networks before submitting.")
+  }
+  const active = await wallet.request({ method: "eth_accounts" }) as string[]
+  if (!validAddress(active?.[0] || "")) throw new Error("No valid wallet account is connected.")
+  return active[0]
 }
 
 function normalize(value: unknown): unknown {

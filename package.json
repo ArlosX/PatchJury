@@ -9,11 +9,11 @@
     "preview": "vite preview --host 127.0.0.1",
     "schema:check": "node scripts/check-schema.mjs",
     "gate": "node scripts/release-gate.mjs",
-    "test": "node tests/client.test.cjs && node tests/validation.test.cjs && node tests/gate.test.cjs"
+    "test": "node tests/client.test.cjs && node tests/validation.test.cjs && node tests/gate.test.cjs && node tests/render-security.test.cjs"
   },
   "dependencies": {
-    "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
     "genlayer-js": "^1.1.8",
     "lucide-react": "^0.548.0",
     "react": "^19.2.4",
@@ -24,7 +24,6 @@
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.0.0",
     "axe-core": "^4.13.0",
-    "genlayer": "^0.39.2",
     "playwright-core": "^1.63.0",
     "typescript": "^5.9.3",
     "vite": "^7.1.0"
