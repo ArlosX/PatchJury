@@ -1,0 +1,12 @@
+Incomplete release test evidence
+
+Candidate: examples/review-ready/candidate.py in this same commit.
+Intended change: cap exponential retry delay at 800 milliseconds.
+
+No per-test results, assertion counts, observed values or test output are
+provided in this report. It does not establish whether the required cases
+for retry attempts 0, 1, 2, 3, 4 and 10 passed or failed.
+
+The separate GitHub Actions run can establish that a workflow completed,
+but this report provides no detailed regression evidence for the release
+review. Absence of these details is not a claim that any test failed.
