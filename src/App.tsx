@@ -269,7 +269,7 @@ function App() {
                 </button>) : <div className="case-empty"><div className="empty-symbol"><LockKeyhole size={24} /></div><strong>{connection === "ready" ? (cases.length ? "No matching reviews" : "Your inbox is clear") : "Waiting for contract data"}</strong><p>{connection === "ready" ? (cases.length ? "Try another search or status filter." : "Create a review to bring your first release into this workspace.") : "Records will appear when the contract connection is restored. You can prepare a new request in the meantime."}</p></div>}
               </div>
 
-              <div className="case-detail">
+              <div key={selectedId || "empty-dossier"} className="case-detail">
                 {selected ? <>
                   <div className="detail-head"><span className="detail-kicker">CASE FILE / {selected.case_id}</span><DecisionBadge decision={verdict?.decision} /></div>
                   <h3>{selected.title}</h3><p className="detail-subtitle">{verdict ? "Consensus-backed assessment of a committed release candidate." : "The evidence is fixed. The case is waiting for its first consensus review."}</p>

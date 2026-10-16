@@ -40,3 +40,29 @@ fieldset.form-grid{border:0;padding:0;margin:0;min-width:0}.form-grid:disabled{o
 @media(max-width:800px){.board-layout{grid-template-columns:minmax(0,1fr)}.workflow-grid,.integrate{grid-template-columns:minmax(0,1fr)}.case-detail{width:100%}.detail-actions{flex-wrap:wrap}.detail-actions .button{white-space:normal;text-align:center}.quote-grid{grid-template-columns:minmax(0,1fr)}.criterion-row{gap:10px}.criterion-row>div{min-width:0}.case-list{width:100%}.review-toolbar,.review-search{min-width:0;max-width:100%}}
 @media(max-width:550px){.board-section>.section-wrap{padding-inline:14px}.case-detail{padding:23px 18px}.case-detail h3{font-size:26px;line-height:1.25;overflow-wrap:anywhere}.detail-meta{line-height:1.8;gap:6px 14px}.detail-head{gap:12px}.criterion-row{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:start;padding-block:17px;column-gap:10px;row-gap:8px}.criterion-icon{margin-top:1px}.criterion-row>div{min-width:0}.criterion-row strong{font-size:12px;line-height:1.5}.criterion-row span{font-size:11px;line-height:1.6}.criterion-value{font-size:9px;padding-top:3px;max-width:75px;overflow-wrap:anywhere}.verdict-reason{padding:17px;margin-top:22px}.verdict-reason>p{font-size:12px;line-height:1.8}.quote-grid{gap:17px}.quote-grid blockquote{font-size:11px;line-height:1.8}.detail-actions{display:flex;flex-direction:column;align-items:stretch;gap:15px}.detail-actions .button{width:100%;min-height:46px;white-space:normal;line-height:1.5;padding:12px}.detail-actions .quiet-link{align-self:flex-start;min-height:44px}.evidence-details summary{min-height:48px;line-height:1.6}.evidence-details a{line-height:1.6}.workspace-footer{padding-inline:14px;line-height:1.7}.workspace-summary{grid-template-columns:repeat(3,minmax(0,1fr))}.workspace-sidebar nav button{min-width:0;padding-inline:5px;font-size:9px}.workspace-breadcrumb strong{font-size:10px}.workspace-topbar{padding-inline:14px;gap:10px}.wallet-button{min-height:44px;max-width:160px}.composer{padding-inline:20px}.composer-head h2{font-size:28px}.composer-head{gap:12px}.composer-head .icon-button{flex:none}.source-form{padding:14px}.tx-note code{max-width:100%}.placeholder-graphic{max-width:100%;gap:8px;padding-inline:18px}.placeholder-graphic>span{width:16px}}
 @media(max-width:370px){.criterion-row{grid-template-columns:20px minmax(0,1fr)}.criterion-value{grid-column:2;max-width:none;padding-top:0}.workspace-summary>div{padding-inline:9px}.workspace-sidebar nav button{font-size:9px;gap:5px}}
+/* Motion language: short, quiet movement with no layout-driven animation. */
+:root{--motion-fast:160ms;--motion-panel:340ms;--motion-ease:cubic-bezier(.22,1,.36,1)}
+@keyframes workspace-enter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+@keyframes dossier-enter{from{opacity:.35;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes composer-enter{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scrim-enter{from{opacity:0}to{opacity:1}}
+.board-section,.workflow,.integrate{animation:workspace-enter var(--motion-panel) var(--motion-ease) both}
+.case-detail{animation:dossier-enter 280ms var(--motion-ease) both}
+.modal-backdrop{animation:scrim-enter 220ms ease-out both}
+.composer{animation:composer-enter 380ms var(--motion-ease) both}
+.notice,.tx-note{animation:workspace-enter 220ms var(--motion-ease) both}
+.workspace-sidebar nav button,.review-filters button,.wallet-button,.icon-button,.case-row{transition:background-color 180ms ease,color 180ms ease,border-color 180ms ease,box-shadow 180ms ease}
+.button{transition:background-color 180ms ease,border-color 180ms ease,box-shadow 220ms ease,transform 220ms var(--motion-ease)}
+.button:active:not(:disabled){transform:translateY(0) scale(.98);box-shadow:none}
+.case-row .row-arrow{transition:transform 220ms var(--motion-ease),color 180ms ease}
+.case-row:hover .row-arrow,.case-row.active .row-arrow{transform:translateX(3px);color:#222}
+.evidence-details summary svg{transition:transform 260ms var(--motion-ease)}
+.form-field input,.form-field textarea{transition:border-color 180ms ease,box-shadow 180ms ease,background-color 180ms ease}
+@supports (interpolate-size:allow-keywords){
+  .evidence-details{interpolate-size:allow-keywords}
+  .evidence-details::details-content{block-size:0;overflow:hidden;opacity:0;transition:block-size 300ms var(--motion-ease),opacity 220ms ease,content-visibility 300ms;transition-behavior:allow-discrete}
+  .evidence-details[open]::details-content{block-size:auto;opacity:1}
+}
+@media(hover:hover) and (pointer:fine){.wallet-button:hover,.icon-button:hover:not(:disabled){box-shadow:0 3px 10px #00000008}.button:hover:not(:disabled){transform:translateY(-1px)}}
+@media(max-width:550px){@keyframes composer-enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}}
+@media(prefers-reduced-motion:reduce){.board-section,.workflow,.integrate,.case-detail,.modal-backdrop,.composer,.notice,.tx-note{animation:none!important}*,*::before,*::after{scroll-behavior:auto!important;transition:none!important}.case-row:hover .row-arrow,.case-row.active .row-arrow,.button:hover:not(:disabled),.button:active:not(:disabled){transform:none!important}}
