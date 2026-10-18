@@ -55,7 +55,12 @@ The following must be populated from actual runs before resubmission
 - Protected release run where matching READY produces released-reviewed-candidate
 - Protected runs where BLOCKED, INSUFFICIENT, missing case, wrong commit, wrong candidate path and altered artifact prevent release
 
-Current state: deployment and these v2 live demonstrations are pending user wallet deployment and signing
+Current state: v2 deployment and source equivalence are verified in docs/verification/v2-source-equivalence.json
+The successful deployment transaction is 0x7142006d264bb47c55bafda9868fa064b9e5bb53eca4021f865f44c866e810ba
+The actual run-associated regression witness is verified in docs/verification/v2-ci-witness.json
+The first v2 live review exposed a malformed supports list from the model
+The corrected source requires a replacement deployment and new live case signing
+Protected release runs remain pending
 Historical v1 results are preserved separately in LIVE-VERIFICATION.md
 
 ## Release demonstration

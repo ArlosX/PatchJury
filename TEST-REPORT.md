@@ -1,64 +1,42 @@
-# PatchJury verification report
+# PatchJury v2 verification status
 
-Date: 2026-10-16
-Contract: 0xDD7c6fa8605d04C366B998e7c9A4BA398F720d94
-Network: GenLayer StudioNet
+## Automated coverage
 
-This report describes the initial test pass. Its initial empty-contract and mobile limitations below were subsequently superseded: see [LIVE-VERIFICATION.md](LIVE-VERIFICATION.md). All three live decisions and the gate were verified, and the mobile verdict/evidence layout was corrected and inspected at a 360-pixel viewport. The final pre-submission rerun passed all 69 automated tests and the production build.
+- 52 deterministic contract tests with controlled GenVM, network and model doubles
+- 22 client tests including successful-return checks, wallet network validation and bounded registry reads
+- 20 input-validation tests
+- 18 release-gate tests using real temporary Git repositories and filesystem operations
+- 1 React rendering test for untrusted title, policy and verdict content
 
-## Automated checks
+Gate coverage includes exact tracked candidate acceptance, matching staged artifact acceptance,
+matching bytes at another path, unrelated files, untracked candidates, modified candidate,
+modified unrelated tracked modules, staged changes, commit/case mismatch, BLOCKED/INSUFFICIENT,
+unauthenticated regression witness, unauthorized submitter, repository-wide/legacy verdicts,
+altered release artifact and unsafe directory symlink/junction resolution
 
-69 automated tests passed:
+Windows does not allow an unprivileged file-symlink test in this environment
+The portable test creates an actual directory junction on Windows and a directory symlink on Linux
+It asserts the gate's symlink-resolution error rather than counting setup failures as rejections
 
-- 27 deterministic contract tests: registration, immutable commitments, duplicate IDs, pinned source URLs, path traversal, repository/CI identity, candidate/report commit binding, revision ownership, READY/BLOCKED/INSUFFICIENT classification, failed/pending CI, invalid quotes, changed source bytes, invalid UTF-8, source size limits, duplicate review and validator disagreement.
-- 18 client tests: finalized-state reads, successful and unsuccessful receipts, missing wallet, rejected connection, chain switch/add, exact byte fingerprints, HTTP failures, size boundaries, UTF-8 and whitespace rejection.
-- 12 input validation tests: complete input, invalid case ID, missing policy/title, mutable branch, repository lookalike, traversal, wrong commit, digest and CI URL.
-- 12 release-gate tests: matching READY input allowed; non-READY, unknown criterion, changed commitment, failed CI, wrong commit/file/origin, unpinned source and missing arguments denied.
+## Actual external checks
 
-Contract tests replace GenVM storage, web, prompt and consensus APIs with controlled doubles. Client and release-gate tests also replace network/wallet I/O. These tests establish deterministic behavior; they do not demonstrate real multi-validator agreement or real wallet signing.
+- Official Studio schema validation passed with 8 methods
+- New StudioNet contract 0x6D4D91AAc38a15cD9525f43d9755791E305b02C4 deployed successfully
+- Successful deployment transaction 0x7142006d264bb47c55bafda9868fa064b9e5bb53eca4021f865f44c866e810ba
+- Deployed source matches reviewed commit 9c4073fb1033595d7c3ef6f084c90e6e5196e768 byte for byte
+- Source SHA-256 27b432c408345e79aa2f0b8f9f268fdc6f803c09f678736b36049206c34aa95d
+- Protocol and bounded empty registry read from the actual deployed contract
+- Authenticated regression workflow https://github.com/ArlosX/PatchJury/actions/runs/39158191856 succeeded
+- Its native check ID, external ID, job ID, run attempt, suite and exact captured report content were independently verified
+- The captured actual API objects were replayed through the contract authentication logic with a controlled model double
+- Browser verification passed for the actual v2 protocol connection, fixture form and widths 360/390/768/1440 without signing transactions
 
-Commands:
+## Remaining acceptance evidence
 
-```sh
-npm test
-python -m unittest discover -s tests -p "test_*.py" -v
-npm run build
-npm run schema:check
-```
-
-## Live checks
-
-- StudioNet accepted the current contract source schema; all 7 public methods were returned.
-- Deployed contract get_protocol returned patchjury-v1 / release-judge-v1.
-- Finalized get_cases and get_verdicts both returned empty objects. No live case or verdict was available for end-to-end testing.
-- Browser connected to StudioNet and displayed the same empty state.
-- Real commit-pinned public GitHub sources were fetched through the browser and all three SHA-256 fields populated successfully.
-- Changing a source URL cleared its previous digest.
-
-## Browser checks
-
-Verified review/protocol/pipeline navigation, empty-state search and status-filter selection, composer opening, initial focus, Shift+Tab trapping, Escape/close, background scroll lock, blocking invalid registration before wallet access, empty-source validation, field locking during fingerprinting, source hashing and invalidation, and skip-to-board navigation. No warning/error console entries were observed in the inspected run. No horizontal overflow was observed at the available desktop viewport.
-
-Search/filter behavior with populated onchain data and mobile viewport rendering remain unverified. The in-app viewport override did not take effect in the earlier responsive inspection.
-
-## Defects corrected during this pass
-
-- Repository names containing dots were interpolated into a regex without escaping. Source/CI validation now compares parsed repository components literally.
-- Missing client validation for case ID and parent-directory source paths now blocks invalid submissions before opening the wallet.
-- Inputs could change while fingerprint requests were running, allowing hashes for earlier URLs to be attached to newer form values. Inputs now lock during fingerprinting/submission; editing a source clears its hash.
-- Registration is disabled during fingerprinting; starting another request and refresh are disabled during an active write.
-- Source fetch has a 20-second timeout and rejects binary/whitespace-only input.
-- Skip navigation now returns to the review view; secondary views have page headings and display notices.
-
-## Final manual acceptance
-
-1. Open the deployed site in Chrome with your wallet. Confirm StudioNet connected. Check a narrow mobile viewport for clipping and menu usability.
-2. Use an actual public repository with a completed GitHub Actions run. Collect baseline/candidate raw URLs pinned to full 40-character commits. Candidate and detailed test report must share a commit; the CI run must belong to that repository and candidate commit. Files must be UTF-8, nonempty and no larger than 12 KB.
-3. Create a review, enter an explicit release policy and those URLs, then Fetch & fingerprint sources. Check the hashes, register and approve in the wallet. Record the transaction hash; wait for FINALIZED.
-4. Confirm the case appears, refresh the page, reopen its evidence and check the case ID, hashes, policy and repository against the submitted data.
-5. Run GenLayer review and approve in the wallet. Wait for finalized execution. Check the recorded criteria, quotes and CI witness; the actual verdict may be READY, BLOCKED or INSUFFICIENT based on evidence and validator judgment.
-6. Search the case by title, ID and repository; use its actual status filter. Refresh and verify its verdict persists. Open the shared ?case= link in a new tab.
-7. Submit a linked revision and confirm the parent case remains unchanged. In StudioNet, test a clearly failing CI case and incomplete-evidence case to observe BLOCKED/INSUFFICIENT without fabricating results.
-8. Run the gate from the reviewed repository checkout: exact commit and file with finalized READY should exit 0; changing the candidate file should exit 1. Record both outputs and transaction links for submission evidence.
-
-No transactions were sent during this verification pass. Successful live registration, GenVM execution, multi-validator review, finalized receipt rendering, and release-gate integration with an actual recorded verdict require the steps above.
+Live READY testing exposed a model supports list where the implementation expected a dictionary
+A replacement contract now handles invalid top-level responses, support containers, individual references and malformed leader support without an AttributeError
+These failure modes have dedicated regression tests
+Replacement deployment, successful READY/BLOCKED/INSUFFICIENT v2 assessments and protected release runs are pending
+No local model double is represented as validator consensus
+No historical v1 result is represented as proof of the v2 changes
+See docs/REVIEW-REMEDIATION.md for the remaining run matrix

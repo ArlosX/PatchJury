@@ -10,7 +10,7 @@ export function validateSources(input: CaseInput): string | null {
   for (const key of keys) {
     const url = input[`${key}_url`]
     const match = url.match(sourcePattern)
-    if (url.length > 500 || !match || match[1].toLowerCase() !== repo[1].toLowerCase() || match[2].toLowerCase() !== repo[2].toLowerCase() || match[4].split("/").includes("..")) {
+    if (url.length > 500 || !match || match[1].toLowerCase() !== repo[1].toLowerCase() || match[2].toLowerCase() !== repo[2].toLowerCase() || match[4].split("/").some(part => !part || part === "." || part === "..")) {
       return `${labels[key]} needs a commit-pinned raw URL from the declared repository, without parent-directory paths`
     }
   }

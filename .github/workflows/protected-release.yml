@@ -34,7 +34,7 @@ jobs:
       - name: Check out trusted gate and maintainer policy
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.sha }}
           path: gate-tool
           persist-credentials: false
       - name: Validate release inputs

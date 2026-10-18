@@ -193,6 +193,49 @@ class ContractTests(unittest.TestCase):
     def test_wrong_candidate_path_in_witness(self):
         self.witness['candidate_path']='unrelated.py'
         self.assertEqual(self.review()['regression'],'UNKNOWN')
+    def test_real_model_list_supports_fails_closed_without_crashing(self):
+        self.raw['supports'] = [{'criterion': 'remediation', 'quote': 'return a+b'}]
+        verdict=self.review()
+        self.assertEqual(verdict['decision'],'INSUFFICIENT')
+        self.assertEqual(verdict['remediation'],'UNKNOWN')
+        self.assertEqual(verdict['supports']['remediation'],{})
+    def test_malformed_support_container_types(self):
+        for value in (None, [], 'approve', 42, True):
+            with self.subTest(value=value):
+                self.setUp();self.raw['supports']=value
+                self.assertEqual(self.review()['decision'],'INSUFFICIENT')
+    def test_malformed_criterion_reference_types(self):
+        for value in (None, [], 'approve', 42, True):
+            with self.subTest(value=value):
+                self.setUp();self.raw['supports']['remediation']=value
+                self.assertEqual(self.review()['remediation'],'UNKNOWN')
+    def test_missing_supports_fails_closed(self):
+        self.raw.pop('supports')
+        self.assertEqual(self.review()['decision'],'INSUFFICIENT')
+    def test_model_prompt_explicitly_requires_dictionary_supports(self):
+        original=gl.nondet.exec_prompt
+        def inspect(prompt,**kwargs):
+            if not prompt.startswith('Validate criterion'):
+                self.assertIn('Never return supports as a list',prompt)
+                self.assertIn('"supports": {"remediation": {',prompt)
+            return original(prompt,**kwargs)
+        gl.nondet.exec_prompt=inspect
+        self.assertEqual(self.review()['decision'],'READY')
+    def test_malformed_top_level_model_responses(self):
+        for value in (None, [], 'approve', 42, True):
+            with self.subTest(value=value):
+                self.setUp()
+                gl.nondet.exec_prompt=lambda prompt,**kwargs: {'supported':True} if prompt.startswith('Validate criterion') else value
+                self.assertEqual(self.review()['decision'],'INSUFFICIENT')
+    def test_malformed_leader_supports_rejects_agreement_without_crash(self):
+        def malformed_leader(assess,validate):
+            leader=assess();leader['supports']=[]
+            self.assertFalse(validate(Return(leader)))
+            raise UserError('malformed leader rejected')
+        gl.vm.run_nondet_unsafe=malformed_leader
+        with self.assertRaises(UserError): self.review()
+        self.assertEqual(self.contract.get_verdicts(),{})
+
     def test_wrong_native_job_id(self):
         self.witness['job_id']=999
         self.assertEqual(self.review()['regression'],'UNKNOWN')

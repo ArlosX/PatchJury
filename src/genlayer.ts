@@ -129,8 +129,8 @@ type StudioReceipt = {
   consensus_data?: {
     leader_receipt?: Array<{
       execution_result?: string
-      result?: { status?: string }
-      genvm_result?: { error_code?: string | null }
+      result?: { status?: string; payload?: string }
+      genvm_result?: { error_code?: string | null; stderr?: string; error_description?: string }
     }>
   }
 }
@@ -166,7 +166,9 @@ export class PatchJuryClient {
     const receipt = await client.waitForTransactionReceipt({ hash, status: "FINALIZED" as never, retries: 120, interval: 5000 }) as StudioReceipt
     const status = String(receipt.status_name || receipt.statusName || receipt.status || "UNKNOWN").toUpperCase()
     if (status !== "FINALIZED" || !successfulReturn(receipt)) {
-      throw new Error(`Transaction ${hash} did not finish successfully (${status}) Inspect it before retrying`)
+      const failed = receipt.consensus_data?.leader_receipt?.find(item => item.execution_result === "ERROR" && item.result?.payload !== "idle")
+      const detail = failed?.genvm_result?.error_description || failed?.genvm_result?.stderr?.trim().split("\n").at(-1) || failed?.result?.payload || "No successful contract return"
+      throw new Error(`Transaction ${hash} did not finish successfully (${status}) ${detail.slice(0,320)} No new verdict was recorded`)
     }
     return String(hash)
   }

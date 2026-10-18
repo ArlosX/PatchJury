@@ -1,0 +1,48 @@
+{
+  "reviewed_commit": "d9cfb51f98186739c559e6ac4c0e8fce0403afcd",
+  "ci_run": "https://github.com/ArlosX/PatchJury/actions/runs/39158191856",
+  "cases": {
+    "READY": {
+      "case_id": "",
+      "title": "Verify the reviewed 800 ms retry cap",
+      "repo_url": "https://github.com/ArlosX/PatchJury",
+      "release_policy": "Assess only the complete individual candidate.py file Its function retry_delay_ms(attempt: int) must return min(100 * (2 ** attempt), 800) for integer attempts 0 through 10 Preserve the one-argument signature and pure function behavior with no I/O or imports Required regression evidence must explicitly show passing cases for attempts 0, 1, 2, 3, 4 and 10 No repository-wide approval is requested",
+      "ci_run_url": "https://api.github.com/repos/ArlosX/PatchJury/actions/runs/39158191856",
+      "parent_id": "",
+      "baseline_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/baseline.py",
+      "baseline_sha256": "aa7164ae4d833dc461a9df604a83e6c385528e0c88d2c4c72254836b24ec4eca",
+      "candidate_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/candidate.py",
+      "candidate_sha256": "34074c3bf12d1fe4db49d405f61fa9fce823d63b8a09fe9b63a592f81ef34ca0",
+      "test_report_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/test-report.txt",
+      "test_report_sha256": "2ebadc4b98712daeaf6277681e9dcc225dfd6454720acf85ea5cb63269319777"
+    },
+    "BLOCKED": {
+      "case_id": "",
+      "title": "Reject the candidate against a 400 ms cap",
+      "repo_url": "https://github.com/ArlosX/PatchJury",
+      "release_policy": "Assess only the complete individual candidate.py file For integer attempts 0 through 10 retry_delay_ms must return min(100 * (2 ** attempt), 400) Required regression checks must confirm the 400 millisecond cap at attempts 3, 4 and 10 Preserve the one-argument pure function with no I/O or imports No repository-wide approval is requested",
+      "ci_run_url": "https://api.github.com/repos/ArlosX/PatchJury/actions/runs/39158191856",
+      "parent_id": "",
+      "baseline_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/baseline.py",
+      "baseline_sha256": "aa7164ae4d833dc461a9df604a83e6c385528e0c88d2c4c72254836b24ec4eca",
+      "candidate_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/candidate.py",
+      "candidate_sha256": "34074c3bf12d1fe4db49d405f61fa9fce823d63b8a09fe9b63a592f81ef34ca0",
+      "test_report_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/test-report.txt",
+      "test_report_sha256": "2ebadc4b98712daeaf6277681e9dcc225dfd6454720acf85ea5cb63269319777"
+    },
+    "INSUFFICIENT": {
+      "case_id": "",
+      "title": "Require missing intermediate retry test evidence",
+      "repo_url": "https://github.com/ArlosX/PatchJury",
+      "release_policy": "Assess only the complete individual candidate.py file Its function must return min(100 * (2 ** attempt), 800) for integer attempts 0 through 10 Preserve the one-argument signature and pure function behavior with no I/O or imports The release additionally requires explicit test report results for EVERY attempt 0 through 10, including attempts 5, 6, 7, 8 and 9 Missing recorded test results must be UNKNOWN No repository-wide approval is requested",
+      "ci_run_url": "https://api.github.com/repos/ArlosX/PatchJury/actions/runs/39158191856",
+      "parent_id": "",
+      "baseline_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/baseline.py",
+      "baseline_sha256": "aa7164ae4d833dc461a9df604a83e6c385528e0c88d2c4c72254836b24ec4eca",
+      "candidate_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/candidate.py",
+      "candidate_sha256": "34074c3bf12d1fe4db49d405f61fa9fce823d63b8a09fe9b63a592f81ef34ca0",
+      "test_report_url": "https://raw.githubusercontent.com/ArlosX/PatchJury/d9cfb51f98186739c559e6ac4c0e8fce0403afcd/examples/review-ready/test-report.txt",
+      "test_report_sha256": "2ebadc4b98712daeaf6277681e9dcc225dfd6454720acf85ea5cb63269319777"
+    }
+  }
+}

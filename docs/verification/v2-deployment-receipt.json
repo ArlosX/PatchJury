@@ -1,0 +1,49 @@
+{
+  "hash": "0x7142006d264bb47c55bafda9868fa064b9e5bb53eca4021f865f44c866e810ba",
+  "status": "FINALIZED",
+  "contract": "0x6D4D91AAc38a15cD9525f43d9755791E305b02C4",
+  "from_address": "0x4F7f0fA81fEF3bf7e9706ee20111b76527d02454",
+  "successful_return": true,
+  "leader_receipts": [
+    {
+      "execution_result": "SUCCESS",
+      "result": {
+        "raw": "AAA=",
+        "status": "return",
+        "payload": {
+          "raw": [
+            0
+          ],
+          "readable": "null"
+        }
+      },
+      "genvm_result": {
+        "stderr": "",
+        "stdout": "",
+        "raw_error": null,
+        "error_code": null,
+        "error_description": null
+      }
+    },
+    {
+      "execution_result": "SUCCESS",
+      "result": {
+        "raw": "AAA=",
+        "status": "return",
+        "payload": {
+          "raw": [
+            0
+          ],
+          "readable": "null"
+        }
+      },
+      "genvm_result": {
+        "stderr": "",
+        "stdout": "",
+        "raw_error": null,
+        "error_code": null,
+        "error_description": null
+      }
+    }
+  ]
+}
