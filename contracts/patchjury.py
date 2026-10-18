@@ -24,13 +24,13 @@ class PatchJury(gl.Contract):
     cases: TreeMap[str, str]
     verdicts: TreeMap[str, str]
 
-    case_ids: TreeMap[u256, str]
+    case_ids: TreeMap[str, str]
     case_count: u256
 
     def __init__(self):
         self.cases = TreeMap[str, str]()
         self.verdicts = TreeMap[str, str]()
-        self.case_ids = TreeMap[u256, str]()
+        self.case_ids = TreeMap[str, str]()
         self.case_count = u256(0)
 
     def _text(self, value: str, label: str, limit: int) -> None:
@@ -136,7 +136,7 @@ class PatchJury(gl.Contract):
             json.dumps(record, sort_keys=True).encode("utf-8")
         ).hexdigest()
         self.cases[case_id] = json.dumps(record, sort_keys=True)
-        self.case_ids[self.case_count] = case_id
+        self.case_ids[str(int(self.case_count))] = case_id
         self.case_count += u256(1)
 
     @gl.public.write
@@ -443,7 +443,7 @@ EVIDENCE_JSON\n{evidence_payload}
         verdicts = {}
         stop = min(offset + limit, int(self.case_count))
         for index in range(offset, stop):
-            key = self.case_ids[u256(int(self.case_count) - 1 - index)]
+            key = self.case_ids[str(int(self.case_count) - 1 - index)]
             records.append(json.loads(self.cases[key]))
             encoded = self.verdicts.get(key, "")
             if encoded:

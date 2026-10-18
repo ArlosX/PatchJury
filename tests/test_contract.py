@@ -72,7 +72,7 @@ class ContractTests(unittest.TestCase):
     def review(self):
         self.register(); self.contract.review_case(self.args[0]); return self.contract.get_verdict(self.args[0])
     def test_constructor_storage_types(self):
-        self.assertEqual(type(self.contract.case_ids).storage_parameters, (int, str))
+        self.assertEqual(type(self.contract.case_ids).storage_parameters, (str, str))
         with self.assertRaises(AssertionError): self.contract.case_ids = TreeMap()
 
     def test_protocol(self): self.assertEqual(self.contract.get_protocol()['version'],'patchjury-v2')
