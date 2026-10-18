@@ -44,9 +44,9 @@ Python contract tests use explicit GenVM/web/model doubles
 Gate tests use real Git repositories and file operations but controlled finalized records
 Neither substitutes for live validator consensus or the protected workflow runs below
 
-## Required live completion record
+## Verified live completion record
 
-The following must be populated from actual runs before resubmission
+The following evidence is recorded from actual deployments and runs
 
 - New v2 contract address and deployment transaction
 - Successful deployed-source comparison including reviewed Git commit and SHA-256
@@ -64,7 +64,7 @@ Live READY PJ2-READY-2DCAF77F and BLOCKED PJ2-BLOCKED-8CFFFF2C cases and their f
 The exact READY artifact passed the local release gate and BLOCKED, wrong case ID, identical bytes at a wrong path and altered artifact were rejected
 Live INSUFFICIENT PJ2-INSUFFICIENT-6C31C0A9 and its successful registration and review receipts are also verified
 Two earlier attempts reached GenVM but rolled back because GitHub Actions returned HTTP 403, without recording a verdict
-Protected release runs remain pending
+All seven protected main-branch release scenarios completed with the expected outcomes in docs/verification/v2-protected-release-runs.json
 Historical v1 results are preserved separately in LIVE-VERIFICATION.md
 
 ## Release demonstration
@@ -92,3 +92,20 @@ node scripts/verify-live.mjs artifacts/live-input.json
 The live input file contains address and cases with id, expected and transaction_hashes
 Only FINALIZED transactions with FINISHED_WITH_RETURN count as successful receipts
 Missing hashes are explicitly marked rather than fabricated
+
+## Actual protected workflow results
+
+| Scenario | Expected result | Actual run |
+| --- | --- | --- |
+| READY | Release artifact published | [Run 39164917028](https://github.com/ArlosX/PatchJury/actions/runs/39164917028) |
+| BLOCKED | Verification rejected and release skipped | [Run 39164969866](https://github.com/ArlosX/PatchJury/actions/runs/39164969866) |
+| INSUFFICIENT | Verification rejected and release skipped | [Run 39165006450](https://github.com/ArlosX/PatchJury/actions/runs/39165006450) |
+| wrong-case-id | Verification rejected and release skipped | [Run 39165041394](https://github.com/ArlosX/PatchJury/actions/runs/39165041394) |
+| wrong-commit | Verification rejected and release skipped | [Run 39165079611](https://github.com/ArlosX/PatchJury/actions/runs/39165079611) |
+| wrong-path-identical-bytes | Verification rejected and release skipped | [Run 39165116241](https://github.com/ArlosX/PatchJury/actions/runs/39165116241) |
+| tampered-artifact | Verification rejected and release skipped | [Run 39165155618](https://github.com/ArlosX/PatchJury/actions/runs/39165155618) |
+
+The READY job publishes only the reviewed single-file artifact and rechecks its digest at handoff
+Negative runs fail at the gate enforcement step
+A nonexistent case is rejected by the SDK contract read with Missing or invalid parameters
+Production bundle configuration and browser checks are recorded in verification/v2-production-ui.json

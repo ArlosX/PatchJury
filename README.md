@@ -96,3 +96,12 @@ It assesses one candidate file rather than every changed file in a commit
 GitHub API and StudioNet availability affect evidence retrieval and consensus latency
 The workflow and policy must be protected by the repository adopting the release gate
 A public verdict does not prevent releases made outside that adopted workflow
+
+## Verified v2 remediation evidence
+
+- [Requirement map and protected workflow runs](docs/REVIEW-REMEDIATION.md)
+- [Live consensus cases and six successful receipts](docs/verification/v2-live-cases.json)
+- [Protected release success and adversarial matrix](docs/verification/v2-protected-release-runs.json)
+- [Deployed source equivalence](docs/verification/v2-source-equivalence.json)
+- [Production interface verification](docs/verification/v2-production-ui.json)
+- [Steward resubmission response](docs/STEWARD-RESPONSE-V2.md)
