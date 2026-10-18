@@ -228,6 +228,7 @@ class PatchJury(gl.Contract):
                         raise gl.vm.UserError("CI jobs exceed supported bound")
                     for job in run_jobs:
                         if (job.get("check_run_url") == check_url and job.get("head_sha") == case["candidate_commit"]
+                            and job.get("run_id") == ci_data.get("id") and job.get("id") == witness.get("job_id")
                             and job.get("status") == "completed" and job.get("conclusion") == "success"):
                             run_jobs_verified = any(step.get("name") == "Capture actual regression output"
                                                     and step.get("status") == "completed" and step.get("conclusion") == "success"
@@ -244,7 +245,8 @@ class PatchJury(gl.Contract):
                         and witness.get("schema") == "patchjury-ci-v1"
                         and witness.get("run_id") == ci_data.get("id")
                         and witness.get("run_attempt") == ci_data.get("run_attempt")
-                        and check.get("external_id") == str(ci_data.get("id")) + ":" + str(ci_data.get("run_attempt"))
+                        and isinstance(check.get("external_id"), str) and 0 < len(check["external_id"]) <= 200
+                        and check.get("external_id") == witness.get("check_external_id")
                         and witness.get("head_sha") == case["candidate_commit"]
                         and witness.get("candidate_path") == candidate_path
                         and witness.get("candidate_sha256") == case["candidate_sha256"]

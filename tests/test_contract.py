@@ -50,13 +50,13 @@ class ContractTests(unittest.TestCase):
         self.raw={'remediation':'PASS','regression':'PASS','scope':'PASS','reason':'Supported by criterion-specific evidence','supports':{}}
         for criterion,source,basis in [('remediation','candidate','FIX_SUPPORTED'),('scope','candidate','FILE_SCOPE_SUPPORTED'),('regression','test_report','TESTS_SUPPORTED')]:
             self.raw['supports'][criterion]={'source':source,'start_line':1,'end_line':1,'quote':self.contents[source].decode(),'reason':'Relevant criterion evidence','basis':basis}
-        self.witness={'schema':'patchjury-ci-v1','run_id':42,'run_attempt':1,'head_sha':self.commit,'candidate_path':'candidate.txt','candidate_sha256':self.args[7],'report_sha256':self.args[9],'report':self.contents['test_report'].decode()}
+        self.witness={'job_id':12,'check_external_id':'42:1','schema':'patchjury-ci-v1','run_id':42,'run_attempt':1,'head_sha':self.commit,'candidate_path':'candidate.txt','candidate_sha256':self.args[7],'report_sha256':self.args[9],'report':self.contents['test_report'].decode()}
         self.check={'id':12,'name':'PatchJury regression evidence','app':{'slug':'github-actions'},'check_suite':{'id':9},'head_sha':self.commit,'status':'completed','conclusion':'success','external_id':'42:1'}
         self.semantic=True
         self.http=200
         def request(url,**kwargs):
             if url==self.args[-2]: body=json.dumps(self.ci).encode()
-            elif '/attempts/' in url: body=json.dumps({'total_count':1,'jobs':[{'check_run_url':'https://api.github.com/repos/owner/repo/check-runs/12','head_sha':self.commit,'status':'completed','conclusion':'success','steps':[{'name':'Capture actual regression output','status':'completed','conclusion':'success'}]}]}).encode()
+            elif '/attempts/' in url: body=json.dumps({'total_count':1,'jobs':[{'id':12,'run_id':42,'check_run_url':'https://api.github.com/repos/owner/repo/check-runs/12','head_sha':self.commit,'status':'completed','conclusion':'success','steps':[{'name':'Capture actual regression output','status':'completed','conclusion':'success'}]}]}).encode()
             elif '/check-suites/' in url: body=json.dumps({'total_count':1,'check_runs':[self.check]}).encode()
             elif '/check-runs/' in url: body=json.dumps({**self.check,'output':{'text':json.dumps(self.witness)}}).encode()
             else: body=self.urls[url]
@@ -192,6 +192,12 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(self.review()['regression'],'UNKNOWN')
     def test_wrong_candidate_path_in_witness(self):
         self.witness['candidate_path']='unrelated.py'
+        self.assertEqual(self.review()['regression'],'UNKNOWN')
+    def test_wrong_native_job_id(self):
+        self.witness['job_id']=999
+        self.assertEqual(self.review()['regression'],'UNKNOWN')
+    def test_forged_native_external_id(self):
+        self.witness['check_external_id']='forged'
         self.assertEqual(self.review()['regression'],'UNKNOWN')
     def test_wrong_check_suite(self):
         self.check['check_suite']['id']=10
