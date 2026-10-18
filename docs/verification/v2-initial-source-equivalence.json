@@ -1,0 +1,10 @@
+{
+  "network": "StudioNet",
+  "address": "0x6D4D91AAc38a15cD9525f43d9755791E305b02C4",
+  "reviewed_commit": "9c4073fb1033595d7c3ef6f084c90e6e5196e768",
+  "source_path": "contracts/patchjury.py",
+  "source_sha256": "27b432c408345e79aa2f0b8f9f268fdc6f803c09f678736b36049206c34aa95d",
+  "deployed_source_sha256": "27b432c408345e79aa2f0b8f9f268fdc6f803c09f678736b36049206c34aa95d",
+  "verified_at": "2026-10-18T19:25:53.919Z",
+  "transaction_hash_variant": "latest-final"
+}

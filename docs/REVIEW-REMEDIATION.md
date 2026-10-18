@@ -56,10 +56,14 @@ The following must be populated from actual runs before resubmission
 - Protected runs where BLOCKED, INSUFFICIENT, missing case, wrong commit, wrong candidate path and altered artifact prevent release
 
 Current state: v2 deployment and source equivalence are verified in docs/verification/v2-source-equivalence.json
-The successful deployment transaction is 0x7142006d264bb47c55bafda9868fa064b9e5bb53eca4021f865f44c866e810ba
+The corrected deployment transaction is 0x8e3d2f5604684939aa1051e1b320cf2375d99729d57f822f45af1e0b409c067d
 The actual run-associated regression witness is verified in docs/verification/v2-ci-witness.json
 The first v2 live review exposed a malformed supports list from the model
-The corrected source requires a replacement deployment and new live case signing
+The corrected replacement is deployed at 0x4fd97fE30D6c07f6f348C12a70416fbD0E15DD06 and source-verified
+Live READY PJ2-READY-2DCAF77F and BLOCKED PJ2-BLOCKED-8CFFFF2C cases and their four successful finalized receipts are independently verified in docs/verification/v2-live-cases.json
+The exact READY artifact passed the local release gate and BLOCKED, wrong case ID, identical bytes at a wrong path and altered artifact were rejected
+Live INSUFFICIENT PJ2-INSUFFICIENT-6C31C0A9 and its successful registration and review receipts are also verified
+Two earlier attempts reached GenVM but rolled back because GitHub Actions returned HTTP 403, without recording a verdict
 Protected release runs remain pending
 Historical v1 results are preserved separately in LIVE-VERIFICATION.md
 

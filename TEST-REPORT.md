@@ -36,7 +36,12 @@ It asserts the gate's symlink-resolution error rather than counting setup failur
 Live READY testing exposed a model supports list where the implementation expected a dictionary
 A replacement contract now handles invalid top-level responses, support containers, individual references and malformed leader support without an AttributeError
 These failure modes have dedicated regression tests
-Replacement deployment, successful READY/BLOCKED/INSUFFICIENT v2 assessments and protected release runs are pending
+The corrected replacement deployment is verified at 0x4fd97fE30D6c07f6f348C12a70416fbD0E15DD06
+Its successful finalized deployment transaction is 0x8e3d2f5604684939aa1051e1b320cf2375d99729d57f822f45af1e0b409c067d
+Its source SHA-256 is 10c212d6bb86829fdf020124ba92616b5b9a8e8be6b2a23613431b57d09b71b3
+Successful READY, BLOCKED and INSUFFICIENT v2 assessments and six successful finalized receipts are verified in docs/verification/v2-live-cases.json
+The local release gate accepted the exact READY artifact and rejected BLOCKED, INSUFFICIENT, wrong ID, wrong path and altered artifacts
+Protected GitHub release runs remain pending
 No local model double is represented as validator consensus
 No historical v1 result is represented as proof of the v2 changes
 See docs/REVIEW-REMEDIATION.md for the remaining run matrix

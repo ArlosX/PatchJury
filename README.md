@@ -9,9 +9,9 @@ Repository: https://github.com/ArlosX/PatchJury
 
 The v2 implementation addresses the steward's file identity, CI evidence, scope, validator support, provenance and registry requirements
 The existing production v1 deployment does not contain the v2 changes
-An initial v2 deployment at 0x6D4D91AAc38a15cD9525f43d9755791E305b02C4 was source-verified
-Live review then exposed a malformed model-output shape failure
-The corrected contract explicitly specifies the JSON shape and fails closed on invalid shapes It requires a replacement deployment
+The corrected v2 contract is deployed at 0x4fd97fE30D6c07f6f348C12a70416fbD0E15DD06
+Its source matches reviewed commit 9110ad750d5436dd4ceebce600c53c8f9380820a byte for byte
+It explicitly specifies the model JSON shape and fails closed on invalid shapes
 The v2 live case and protected release demonstrations are still required before claiming the upgrade complete
 See docs/REVIEW-REMEDIATION.md for the exact status and completion requirements
 

@@ -1,0 +1,45 @@
+{
+  "verified_at": "2026-10-18T20:43:41.663Z",
+  "address": "0x4fd97fE30D6c07f6f348C12a70416fbD0E15DD06",
+  "results": [
+    {
+      "name": "READY exact candidate and staged artifact",
+      "accepted": true,
+      "result": {
+        "case_id": "PJ2-READY-2DCAF77F",
+        "commit": "d9cfb51f98186739c559e6ac4c0e8fce0403afcd",
+        "candidate_path": "examples/review-ready/candidate.py",
+        "candidate_sha256": "34074c3bf12d1fe4db49d405f61fa9fce823d63b8a09fe9b63a592f81ef34ca0",
+        "artifact_sha256": "34074c3bf12d1fe4db49d405f61fa9fce823d63b8a09fe9b63a592f81ef34ca0",
+        "scope": "candidate-file",
+        "authorization": "maintainer-policy",
+        "author": "0x04eB0c501Adcf053901E2910862C89803E7b5552"
+      }
+    },
+    {
+      "name": "BLOCKED verdict",
+      "accepted": false,
+      "reason": "a finalized READY verdict with three passing criteria is required"
+    },
+    {
+      "name": "INSUFFICIENT verdict",
+      "accepted": false,
+      "reason": "a finalized READY verdict with three passing criteria is required"
+    },
+    {
+      "name": "Wrong case ID",
+      "accepted": false,
+      "reason": "case ID mismatch or missing finalized verdict"
+    },
+    {
+      "name": "Identical bytes at wrong path",
+      "accepted": false,
+      "reason": "candidate path differs from the exact registered repository path"
+    },
+    {
+      "name": "Tampered artifact",
+      "accepted": false,
+      "reason": "release artifact differs from reviewed candidate bytes"
+    }
+  ]
+}
