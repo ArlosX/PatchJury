@@ -1,0 +1,8 @@
+{
+  "historical_version": "v1",
+  "address": "0xDD7c6fa8605d04C366B998e7c9A4BA398F720d94",
+  "source_sha256": "ff8f3d650f59cd78b0111984e5828d9e358414b214d6e53fe42793f8cc5d722a",
+  "matching_git_commit": "71fbbefba53df53ca6ff48896340889c8c61d64b",
+  "source_path": "contracts/patchjury.py",
+  "verified_at": "2026-10-18T18:52:11.323Z"
+}

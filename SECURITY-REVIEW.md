@@ -1,57 +1,60 @@
-# Security and usability review — 2026-10-16
+# PatchJury v2 security review
 
-Scope: source review, local adversarial tests, npm dependency audit and
-non-destructive checks of https://patchjury.vercel.app/. No attack transactions,
-load tests or destructive probes were sent to production or StudioNet.
+## Authorization boundary
 
-## Findings and changes
+Public case submission records a wallet address and community-submitted provenance
+It makes no assertion that the wallet owns or maintains the GitHub repository
+A READY assessment covers only the individual candidate file against the stated policy
+The protected release gate separately requires an approved author, candidate path and contract from the trusted maintainer policy
+That policy and the gate are loaded at the immutable workflow commit from protected main, separately from the reviewed candidate
 
-1. Missing framing and browser hardening headers on the initial live deployment.
-   Added vercel.json with CSP (including frame-ancestors none), X-Frame-Options
-   DENY, nosniff, referrer policy, and camera/microphone/geolocation restrictions.
-   Script, style and font resources are limited to this origin; network requests
-   are limited to this origin, StudioNet and public raw GitHub sources.
-2. Wallet chain selection was trusted after switch/add requests. The client now
-   verifies the actual chain again, explicitly selects a newly added chain, and
-   re-reads the active account before any write. A refused/ignored chain change
-   fails closed. Revision submission checks the original author before writing;
-   the deployed contract independently enforces that authorization.
-3. Search/status filtering could leave an unrelated case in the detail pane.
-   The detail now follows the visible list; its selection and shared URL agree.
-   A newly registered case clears old filters so it can be found immediately.
-4. The unused development-only genlayer CLI brought six transitive audit alerts,
-   including critical Tinypool/Vitest advisories. Removed that unused dependency
-   from package.json and lockfile. The frontend retains genlayer-js. Final npm
-   audit against the updated lockfile reports zero known vulnerabilities.
+## File and artifact integrity
 
-## Tests
+The gate derives the exact repository path and commit from the immutable candidate URL
+It validates Git origin, HEAD, tracked regular blob mode, source digest, working-tree bytes and clean tracked/index contents
+Every path component is checked for unsafe symbolic links or junctions
+The example stages a distinct candidate artifact, verifies its bytes before the job handoff and checks the resulting digest again in the release job
+Other artifacts are not implicitly authorized
 
-86 automated tests pass: 33 contract, 20 client, 20 input validation, 12 gate and
-1 rendering security test. Controlled doubles replace wallet/network/GenVM/LLM
-I/O in unit tests. The XSS rendering test checks actual App HTML output for
-escaped malicious case titles, policy and verdict text.
+## Regression witness
 
-Additional scenarios cover javascript URLs, private hosts, deceptive hostnames,
-userinfo URLs, encoded traversal, query/fragment suffixes, revision ownership,
-wrong wallet chain, account changes, invalid model enums and keeping embedded
-instruction-looking strings within JSON evidence data.
+A successful unrelated workflow cannot authenticate a report
+The contract checks a successful GitHub Actions app check attached to the exact run suite
+The witness includes the run ID/attempt, native check external ID, actual job ID, commit, candidate path/hash and exact report hash/content
+The associated successful job must contain the successful test capture step
+The publisher preserves GitHub's native metadata instead of relying on custom metadata that GitHub overwrites on completion
+The example executes reviewed code in a read-only container without network access, host credentials or a Docker socket
+Only the host publisher receives the check-writing token after tests complete
 
-The JSON prompt test is NOT an adversarial live LLM benchmark and does not
-establish immunity to prompt injection. Real model behavior remains bounded
-by the model and independent validator agreement.
+## Validator support
 
-Existing live READY/BLOCKED/INSUFFICIENT and release-gate checks are recorded in
-LIVE-VERIFICATION.md. No new signing or review transaction was needed here.
+Each criterion has a bounded exact source-line citation, an explanation and a reason category
+Validators independently retrieve and assess the evidence
+They require matching criteria and compatible reason categories plus a separate semantic support check
+A material conflict rejects agreement and leaves no recorded verdict
+The aggregate decision is calculated deterministically from the accepted criterion values
 
-## Limits and remaining protocol considerations
+## Resource bounds
 
-- These checks are not a formal security audit or proof of absence of bugs.
-- Report text is not cryptographically bound to CI job stdout; a completed run
-  and an evidence report are separate sources. This is disclosed in README.
-- Review is public and one-time. If evidence is reviewed while its CI run is
-  pending, an INSUFFICIENT result can be permanent for that case; a new revision
-  is needed. Use a completed CI run as required by the registration instructions.
-- Collection reads currently fetch all records. Very large public registries
-  would require pagination/indexing; large-scale availability was not tested.
-- Model inference, third-party GitHub availability and StudioNet behavior are
-  outside these local test guarantees.
+Source files are bounded to 12 KB each
+CI responses and listings are bounded and fail closed if incomplete
+Registry views return at most 25 indexed cases and associated verdicts per call
+The frontend loads additional pages only on request and looks up explicit deep links individually
+
+## Protections actually configured
+
+Main requires a pull request and passing security-boundaries status from the GitHub Actions app
+Administrator enforcement is enabled and force pushes/deletion are disabled
+The patchjury-release environment restricts deployment to protected branches
+The release workflow additionally requires refs/heads/main and successful verify-release dependency
+The repository has a single maintainer, so an additional human review approval is not asserted
+
+## Residual limits
+
+Repository-controlled workflows and tests remain evidence from that repository
+Their authentication does not prove that a malicious maintainer wrote honest tests
+Model-based interpretation can disagree and is not a complete security audit
+Public RPC and GitHub availability affect execution
+A repository owner can remove protections or release outside the adopted workflow
+Historical v1 cases do not gain v2 protections retroactively
+V2 live assessments and the protected release run matrix remain required acceptance evidence

@@ -1,0 +1,111 @@
+name: Protected candidate release
+on:
+  workflow_dispatch:
+    inputs:
+      case_id:
+        description: Finalized PatchJury v2 case ID
+        required: true
+        type: string
+      reviewed_commit:
+        description: Exact 40-character candidate commit
+        required: true
+        type: string
+      candidate_path:
+        description: Exact registered repository path
+        default: examples/review-ready/candidate.py
+        required: true
+        type: string
+      tamper_artifact:
+        description: Adversarial demonstration only — must block release
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: patchjury-protected-candidate-release
+  cancel-in-progress: false
+jobs:
+  verify-release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_sha: ${{ steps.proof.outputs.sha }}
+    steps:
+      - name: Check out trusted gate and maintainer policy
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: gate-tool
+          persist-credentials: false
+      - name: Validate release inputs
+        env:
+          REVIEWED_COMMIT: ${{ inputs.reviewed_commit }}
+          CASE_ID: ${{ inputs.case_id }}
+        run: |
+          [[ "$REVIEWED_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$CASE_ID" =~ ^[A-Za-z0-9_-]{1,64}$ ]]
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.reviewed_commit }}
+          path: reviewed-source
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts
+        working-directory: gate-tool
+      - name: Stage candidate release artifact
+        env:
+          CANDIDATE_PATH: ${{ inputs.candidate_path }}
+          TAMPER: ${{ inputs.tamper_artifact }}
+        working-directory: reviewed-source
+        run: |
+          mkdir -p .patchjury-output
+          cp -- examples/review-ready/candidate.py .patchjury-output/candidate.py
+          if [ "$TAMPER" = "true" ]; then printf '\nALTERED\n' >> .patchjury-output/candidate.py; fi
+      - name: Enforce finalized decision, path, maintainer policy and artifact identity
+        env:
+          CASE_ID: ${{ inputs.case_id }}
+          CANDIDATE_PATH: ${{ inputs.candidate_path }}
+          GENLAYER_RPC_URL: https://studio.genlayer.com/api
+        working-directory: reviewed-source
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATCHJURY_POLICY_FILE="$GITHUB_WORKSPACE/gate-tool/.patchjury/release-policy.json"
+          export PATCHJURY_CONTRACT_ADDRESS="$(node -p "JSON.parse(require('fs').readFileSync(process.env.PATCHJURY_POLICY_FILE,'utf8')).contract_address")"
+          node "$GITHUB_WORKSPACE/gate-tool/scripts/release-gate.mjs" "$CASE_ID" "$CANDIDATE_PATH" --artifact .patchjury-output/candidate.py | tee .patchjury-output/gate-proof.txt
+      - name: Bind the handoff artifact
+        id: proof
+        working-directory: reviewed-source
+        run: echo "sha=$(sha256sum .patchjury-output/candidate.py | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gated-candidate
+          path: |
+            reviewed-source/.patchjury-output/candidate.py
+            reviewed-source/.patchjury-output/gate-proof.txt
+          include-hidden-files: true
+          if-no-files-found: error
+  release:
+    needs: verify-release
+    if: needs.verify-release.result == 'success'
+    environment: patchjury-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: gated-candidate
+          path: release-candidate
+      - name: Verify immutable handoff before release
+        env:
+          EXPECTED_SHA: ${{ needs.verify-release.outputs.artifact_sha }}
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' "$EXPECTED_SHA" release-candidate/candidate.py | sha256sum --check --strict
+      - name: Publish reviewed single-file release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: released-reviewed-candidate
+          path: release-candidate/candidate.py
+          if-no-files-found: error
