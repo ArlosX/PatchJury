@@ -1,0 +1,22 @@
+{
+  "verified_at": "2026-10-18T20:56:31.067Z",
+  "website": "https://patchjury.vercel.app/",
+  "http_status": 200,
+  "contract_address": "0x4fd97fE30D6c07f6f348C12a70416fbD0E15DD06",
+  "contract_in_production_bundle": true,
+  "bundles": [
+    "https://patchjury.vercel.app/assets/index-DrMR--I7.js"
+  ],
+  "browser_check": {
+    "fixture_modal": true,
+    "responsive_widths": [
+      360,
+      390,
+      768,
+      1440
+    ],
+    "horizontal_overflow": false,
+    "page_errors": [],
+    "wallet_calls": false
+  }
+}

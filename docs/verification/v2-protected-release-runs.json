@@ -1,0 +1,703 @@
+{
+  "verified_at": "2026-10-18T20:57:51.287Z",
+  "results": [
+    {
+      "scenario": "READY",
+      "expected": "release",
+      "pass": true,
+      "inputs": {
+        "case_id": "PJ2-READY-2DCAF77F",
+        "reviewed_commit": "d9cfb51f98186739c559e6ac4c0e8fce0403afcd",
+        "candidate_path": "examples/review-ready/candidate.py",
+        "tamper_artifact": "false"
+      },
+      "run_id": 39164917028,
+      "url": "https://github.com/ArlosX/PatchJury/actions/runs/39164917028",
+      "head_sha": "7022787bb27371658825ec79ddfeaccaabd0e5fb",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "name": "verify-release",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate release inputs",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --ignore-scripts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stage candidate release artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+              "conclusion": "success"
+            },
+            {
+              "name": "Bind the handoff artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/upload-artifact@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "name": "release",
+          "conclusion": "success",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/download-artifact@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Verify immutable handoff before release",
+              "conclusion": "success"
+            },
+            {
+              "name": "Publish reviewed single-file release artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        }
+      ],
+      "gate_log": [
+        "2026-10-18T20:47:48.7035491Z PATCHJURY READY {\"case_id\":\"PJ2-READY-2DCAF77F\",\"commit\":\"d9cfb51f98186739c559e6ac4c0e8fce0403afcd\",\"candidate_path\":\"examples/review-ready/candidate.py\",\"candidate_sha256\":\"34074c3bf12d1fe4db49d405f61fa9fce823d63b8a09fe9b63a592f81ef34ca0\",\"artifact_sha256\":\"34074c3bf12d1fe4db49d405f61fa9fce823d63b8a09fe9b63a592f81ef34ca0\",\"scope\":\"candidate-file\",\"authorization\":\"maintainer-policy\",\"author\":\"0x04eB0c501Adcf053901E2910862C89803E7b5552\"}"
+      ],
+      "enforcement_step": {
+        "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-10-18T20:47:45Z",
+        "completed_at": "2026-10-18T20:47:48Z"
+      },
+      "artifacts": [
+        {
+          "name": "gated-candidate",
+          "size_in_bytes": 657,
+          "digest": "sha256:8369781644414bbfd4663b0e6b0ce87a652cba631839106d33ff2aae4b7f8f6a"
+        },
+        {
+          "name": "released-reviewed-candidate",
+          "size_in_bytes": 265,
+          "digest": "sha256:5771975ce4cbb775965750607c14df9b61cfb1082e8b1a763dd81d135d1f42ae"
+        }
+      ]
+    },
+    {
+      "scenario": "BLOCKED",
+      "expected": "block",
+      "pass": true,
+      "inputs": {
+        "case_id": "PJ2-BLOCKED-8CFFFF2C",
+        "reviewed_commit": "d9cfb51f98186739c559e6ac4c0e8fce0403afcd",
+        "candidate_path": "examples/review-ready/candidate.py",
+        "tamper_artifact": "false"
+      },
+      "run_id": 39164969866,
+      "url": "https://github.com/ArlosX/PatchJury/actions/runs/39164969866",
+      "head_sha": "7022787bb27371658825ec79ddfeaccaabd0e5fb",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "name": "verify-release",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate release inputs",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --ignore-scripts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stage candidate release artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+              "conclusion": "failure"
+            },
+            {
+              "name": "Bind the handoff artifact",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/upload-artifact@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "name": "release",
+          "conclusion": "skipped",
+          "steps": []
+        }
+      ],
+      "gate_log": [
+        "2026-10-18T20:48:31.7429839Z PATCHJURY BLOCKED: a finalized READY verdict with three passing criteria is required"
+      ],
+      "enforcement_step": {
+        "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 8,
+        "started_at": "2026-10-18T20:48:29Z",
+        "completed_at": "2026-10-18T20:48:31Z"
+      }
+    },
+    {
+      "scenario": "INSUFFICIENT",
+      "expected": "block",
+      "pass": true,
+      "inputs": {
+        "case_id": "PJ2-INSUFFICIENT-6C31C0A9",
+        "reviewed_commit": "d9cfb51f98186739c559e6ac4c0e8fce0403afcd",
+        "candidate_path": "examples/review-ready/candidate.py",
+        "tamper_artifact": "false"
+      },
+      "run_id": 39165006450,
+      "url": "https://github.com/ArlosX/PatchJury/actions/runs/39165006450",
+      "head_sha": "7022787bb27371658825ec79ddfeaccaabd0e5fb",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "name": "verify-release",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate release inputs",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --ignore-scripts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stage candidate release artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+              "conclusion": "failure"
+            },
+            {
+              "name": "Bind the handoff artifact",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/upload-artifact@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "name": "release",
+          "conclusion": "skipped",
+          "steps": []
+        }
+      ],
+      "gate_log": [
+        "2026-10-18T20:49:03.4567558Z PATCHJURY BLOCKED: a finalized READY verdict with three passing criteria is required"
+      ],
+      "enforcement_step": {
+        "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 8,
+        "started_at": "2026-10-18T20:49:00Z",
+        "completed_at": "2026-10-18T20:49:03Z"
+      }
+    },
+    {
+      "scenario": "wrong-case-id",
+      "expected": "block",
+      "pass": true,
+      "inputs": {
+        "case_id": "PJ2-NONEXISTENT",
+        "reviewed_commit": "d9cfb51f98186739c559e6ac4c0e8fce0403afcd",
+        "candidate_path": "examples/review-ready/candidate.py",
+        "tamper_artifact": "false"
+      },
+      "run_id": 39165041394,
+      "url": "https://github.com/ArlosX/PatchJury/actions/runs/39165041394",
+      "head_sha": "7022787bb27371658825ec79ddfeaccaabd0e5fb",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "name": "verify-release",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate release inputs",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --ignore-scripts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stage candidate release artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+              "conclusion": "failure"
+            },
+            {
+              "name": "Bind the handoff artifact",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/upload-artifact@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "name": "release",
+          "conclusion": "skipped",
+          "steps": []
+        }
+      ],
+      "gate_log": [
+        "2026-10-18T20:49:30.0808709Z PATCHJURY BLOCKED: Missing or invalid parameters."
+      ],
+      "enforcement_step": {
+        "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 8,
+        "started_at": "2026-10-18T20:49:27Z",
+        "completed_at": "2026-10-18T20:49:30Z"
+      }
+    },
+    {
+      "scenario": "wrong-commit",
+      "expected": "block",
+      "pass": true,
+      "inputs": {
+        "case_id": "PJ2-READY-2DCAF77F",
+        "reviewed_commit": "9110ad750d5436dd4ceebce600c53c8f9380820a",
+        "candidate_path": "examples/review-ready/candidate.py",
+        "tamper_artifact": "false"
+      },
+      "run_id": 39165079611,
+      "url": "https://github.com/ArlosX/PatchJury/actions/runs/39165079611",
+      "head_sha": "7022787bb27371658825ec79ddfeaccaabd0e5fb",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "name": "verify-release",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate release inputs",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --ignore-scripts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stage candidate release artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+              "conclusion": "failure"
+            },
+            {
+              "name": "Bind the handoff artifact",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/upload-artifact@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "name": "release",
+          "conclusion": "skipped",
+          "steps": []
+        }
+      ],
+      "gate_log": [
+        "2026-10-18T20:49:58.4219929Z PATCHJURY BLOCKED: Git HEAD differs from reviewed commit"
+      ],
+      "enforcement_step": {
+        "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 8,
+        "started_at": "2026-10-18T20:49:55Z",
+        "completed_at": "2026-10-18T20:49:58Z"
+      }
+    },
+    {
+      "scenario": "wrong-path-identical-bytes",
+      "expected": "block",
+      "pass": true,
+      "inputs": {
+        "case_id": "PJ2-READY-2DCAF77F",
+        "reviewed_commit": "d9cfb51f98186739c559e6ac4c0e8fce0403afcd",
+        "candidate_path": ".patchjury-output/candidate.py",
+        "tamper_artifact": "false"
+      },
+      "run_id": 39165116241,
+      "url": "https://github.com/ArlosX/PatchJury/actions/runs/39165116241",
+      "head_sha": "7022787bb27371658825ec79ddfeaccaabd0e5fb",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "name": "verify-release",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate release inputs",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --ignore-scripts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stage candidate release artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+              "conclusion": "failure"
+            },
+            {
+              "name": "Bind the handoff artifact",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/upload-artifact@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "name": "release",
+          "conclusion": "skipped",
+          "steps": []
+        }
+      ],
+      "gate_log": [
+        "2026-10-18T20:50:27.4616712Z PATCHJURY BLOCKED: candidate path differs from the exact registered repository path"
+      ],
+      "enforcement_step": {
+        "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 8,
+        "started_at": "2026-10-18T20:50:24Z",
+        "completed_at": "2026-10-18T20:50:27Z"
+      }
+    },
+    {
+      "scenario": "tampered-artifact",
+      "expected": "block",
+      "pass": true,
+      "inputs": {
+        "case_id": "PJ2-READY-2DCAF77F",
+        "reviewed_commit": "d9cfb51f98186739c559e6ac4c0e8fce0403afcd",
+        "candidate_path": "examples/review-ready/candidate.py",
+        "tamper_artifact": "true"
+      },
+      "run_id": 39165155618,
+      "url": "https://github.com/ArlosX/PatchJury/actions/runs/39165155618",
+      "head_sha": "7022787bb27371658825ec79ddfeaccaabd0e5fb",
+      "conclusion": "failure",
+      "jobs": [
+        {
+          "name": "verify-release",
+          "conclusion": "failure",
+          "steps": [
+            {
+              "name": "Set up job",
+              "conclusion": "success"
+            },
+            {
+              "name": "Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Validate release inputs",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run actions/setup-node@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Run npm ci --ignore-scripts",
+              "conclusion": "success"
+            },
+            {
+              "name": "Stage candidate release artifact",
+              "conclusion": "success"
+            },
+            {
+              "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+              "conclusion": "failure"
+            },
+            {
+              "name": "Bind the handoff artifact",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Run actions/upload-artifact@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/setup-node@v4",
+              "conclusion": "skipped"
+            },
+            {
+              "name": "Post Run actions/checkout@v4",
+              "conclusion": "success"
+            },
+            {
+              "name": "Post Check out trusted gate and maintainer policy",
+              "conclusion": "success"
+            },
+            {
+              "name": "Complete job",
+              "conclusion": "success"
+            }
+          ]
+        },
+        {
+          "name": "release",
+          "conclusion": "skipped",
+          "steps": []
+        }
+      ],
+      "gate_log": [
+        "2026-10-18T20:50:56.4818175Z PATCHJURY BLOCKED: release artifact differs from reviewed candidate bytes"
+      ],
+      "enforcement_step": {
+        "name": "Enforce finalized decision, path, maintainer policy and artifact identity",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 8,
+        "started_at": "2026-10-18T20:50:53Z",
+        "completed_at": "2026-10-18T20:50:56Z"
+      }
+    }
+  ]
+}

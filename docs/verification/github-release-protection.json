@@ -1,49 +1,78 @@
 {
-  "verified_at": "2026-10-18T18:53:57.672Z",
-  "repository": "ArlosX/PatchJury",
-  "required_status_checks": {
-    "url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/required_status_checks",
-    "strict": true,
-    "contexts": [
-      "security-boundaries"
-    ],
-    "contexts_url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/required_status_checks/contexts",
-    "checks": [
-      {
-        "context": "security-boundaries",
-        "app_id": null
-      }
-    ]
-  },
-  "enforce_admins": {
-    "url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/enforce_admins",
-    "enabled": true
-  },
-  "required_pull_request_reviews": {
-    "url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/required_pull_request_reviews",
-    "dismiss_stale_reviews": true,
-    "require_code_owner_reviews": false,
-    "require_last_push_approval": false,
-    "required_approving_review_count": 0
-  },
-  "allow_force_pushes": {
-    "enabled": false
-  },
-  "allow_deletions": {
-    "enabled": false
+  "verified_at": "2026-10-18T20:45:17.959Z",
+  "branch": "main",
+  "protection": {
+    "url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection",
+    "required_status_checks": {
+      "url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/required_status_checks",
+      "strict": true,
+      "contexts": [
+        "security-boundaries"
+      ],
+      "contexts_url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/required_status_checks/contexts",
+      "checks": [
+        {
+          "context": "security-boundaries",
+          "app_id": 15368
+        }
+      ]
+    },
+    "required_pull_request_reviews": {
+      "url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/required_pull_request_reviews",
+      "dismiss_stale_reviews": true,
+      "require_code_owner_reviews": false,
+      "require_last_push_approval": false,
+      "required_approving_review_count": 0
+    },
+    "required_signatures": {
+      "url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/required_signatures",
+      "enabled": false
+    },
+    "enforce_admins": {
+      "url": "https://api.github.com/repos/ArlosX/PatchJury/branches/main/protection/enforce_admins",
+      "enabled": true
+    },
+    "required_linear_history": {
+      "enabled": true
+    },
+    "allow_force_pushes": {
+      "enabled": false
+    },
+    "allow_deletions": {
+      "enabled": false
+    },
+    "block_creations": {
+      "enabled": false
+    },
+    "required_conversation_resolution": {
+      "enabled": true
+    },
+    "lock_branch": {
+      "enabled": false
+    },
+    "allow_fork_syncing": {
+      "enabled": false
+    }
   },
   "environment": {
+    "id": 24648636722,
+    "node_id": "EN_kwDOVLb7LM8AAAAFvSxZMg",
     "name": "patchjury-release",
-    "deployment_branch_policy": {
-      "protected_branches": true,
-      "custom_branch_policies": false
-    },
+    "url": "https://api.github.com/repos/ArlosX/PatchJury/environments/patchjury-release",
+    "html_url": "https://github.com/ArlosX/PatchJury/deployments/activity_log?environments_filter=patchjury-release",
+    "created_at": "2026-10-18T18:53:56Z",
+    "updated_at": "2026-10-18T18:53:56Z",
+    "can_admins_bypass": true,
     "protection_rules": [
       {
         "id": 69247895,
         "node_id": "GA_kwDOVLb7LM4EIKOX",
         "type": "branch_policy"
       }
-    ]
+    ],
+    "deployment_branch_policy": {
+      "protected_branches": true,
+      "custom_branch_policies": false
+    }
   }
 }
