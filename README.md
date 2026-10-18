@@ -1,91 +1,95 @@
 # PatchJury
 
-**Release decisions with receipts for agent-authored code.**
+A consensus-backed assessment and opt-in release gate for an individual committed source file
 
-PatchJury asks a narrow, consequential question: does this exact committed candidate satisfy a maintainer's release policy, and does a pinned test report provide enough evidence to ship it? A GenLayer Intelligent Contract reads the public sources and the associated GitHub Actions run, has validators independently assess the same material, and records a structured `READY`, `BLOCKED`, or `INSUFFICIENT` verdict. A read-only CI gate checks the finalized verdict, successful CI run, Git commit and local file bytes before allowing a release job to continue.
+Website: https://patchjury.vercel.app/
+Repository: https://github.com/ArlosX/PatchJury
 
-This is a new project, separate from Genlos and Faultline. The contract is deployed on StudioNet at `0xDD7c6fa8605d04C366B998e7c9A4BA398F720d94`. Its schema and `get_protocol()` response were checked against StudioNet. Three live cases demonstrate finalized READY, BLOCKED and INSUFFICIENT decisions. The read-only release gate accepted the exact READY candidate and rejected both non-ready decisions and a modified candidate file. See [live verification](LIVE-VERIFICATION.md).
+## Security upgrade status
 
-Live app: https://patchjury.vercel.app/
+The v2 implementation addresses the steward's file identity, CI evidence, scope, validator support, provenance and registry requirements
+The existing production v1 deployment does not contain the v2 changes
+A new StudioNet deployment, source-equivalence verification and v2 live release demonstrations are required before claiming the upgrade complete
+See docs/REVIEW-REMEDIATION.md for the exact status and completion requirements
 
-- [READY case](https://patchjury.vercel.app/?case=REL-RETRY-CAP-001)
-- [BLOCKED case](https://patchjury.vercel.app/?case=REL-RETRY-BLOCKED-001)
-- [INSUFFICIENT case](https://patchjury.vercel.app/?case=REL-RETRY-INSUFFICIENT-001)
+## What it does
 
-## Why GenLayer is central
+Register immutable baseline, candidate and report URLs pinned to Git commits with SHA-256 commitments
+GenLayer independently retrieves evidence and evaluates remediation, regression and scope
+Validators independently recompute criteria and check criterion-specific evidence support
+The contract derives READY, BLOCKED or INSUFFICIENT deterministically from the final criteria
+The frontend retrieves finalized records with bounded registry pages
 
-A conventional CI check can compare hashes and run known tests. It cannot decide whether an agent's implementation really addresses a natural-language requirement, whether a test report is substantively adequate, or whether the patch drifts outside the agreed scope. PatchJury's three criterion judgments occur inside a GenLayer non-deterministic block. Validators fetch the same commit-pinned files, verify their SHA-256 commitments, independently make the assessment, and compare decision-critical fields. Deterministic code derives the release decision from those fields.
+All public cases are community assessments
+READY concerns the individual candidate file only and does not prove repository-maintainer authorization
+Repository-wide restrictions that cannot be established from the file require UNKNOWN rather than implied approval
 
-| Criterion | `PASS` | `FAIL` | `UNKNOWN` |
-| --- | --- | --- | --- |
-| Remediation | Candidate materially meets the policy | Positive evidence it violates the policy | Evidence is too thin or ambiguous |
-| Regression | Specific, credible required test evidence | A required test is known to fail | No adequate test evidence |
-| Scope | Change stays inside the policy's boundary | Positive evidence of prohibited drift | Scope cannot be established |
+## Regression evidence
 
-`BLOCKED` takes precedence when any criterion fails. `READY` requires all three to pass and a completed, successful GitHub Actions run for the candidate commit. All other combinations yield `INSUFFICIENT`. If a source fails to load, its bytes differ from the commitment, or the CI run belongs to another repository or commit, the review transaction fails **without storing a verdict**.
+The v2 contract requires a GitHub Actions app check belonging to the exact declared run suite and attempt
+The check must be associated with a successful job containing the successful Capture actual regression output step
+Its structured witness binds the candidate commit/path/hash and the exact submitted test-report content/hash
+An unrelated successful workflow cannot authenticate a report without that matching witness
 
-## Product flow
+The example regression workflow runs tests in a read-only container without network access or host credentials
+Captured stdout must exactly match the committed report before the host publishes its run-associated check
+The publisher updates the existing job check rather than creating an unrelated check suite
 
-1. The maintainer prepares a public repository with baseline code, candidate code and a test report at commit-pinned `raw.githubusercontent.com` URLs. Candidate and report must use the same commit. A GitHub Actions workflow runs on that commit.
-2. The maintainer writes the release policy in PatchJury and registers the three URLs with their SHA-256 hashes plus the public run API URL (`https://api.github.com/repos/OWNER/REPO/actions/runs/RUN_ID`). The request is immutable.
-3. Anyone can request a GenLayer review. The contract reads all three files and the workflow run, confirms the run belongs to the declared repository and candidate commit, and produces an onchain verdict after consensus. The app waits for finalization and shows only finalized state.
-4. The release job runs `scripts/release-gate.mjs`. It exits successfully only if the finalized verdict is `READY`, every criterion is `PASS`, the case and verdict commitments match, the workflow completed successfully for the checked-out `HEAD`, Git `origin` matches the declared repository, and the local candidate file's hash matches the reviewed bytes.
-5. New evidence or code goes into a new case with `parent_id`, preserving the history. The original author alone may register a revision for the same repository.
+Repository-controlled test output remains an evidence claim whose relevance is assessed by validators
+This system does not replace a security audit or establish that arbitrary repository-maintainer-controlled tests are honest
 
-## Run locally
+## Maintainer-controlled release gate
 
-Requires Node.js 22 or later.
+The gate reads finalized v2 state and requires
 
-```bash
+- READY and all three criteria PASS
+- Matching immutable case commitment and authenticated CI witness
+- Matching repository, exact commit and exact candidate repository-relative path
+- Tracked regular Git blob at that commit with matching SHA-256 and local bytes
+- No symlinks and no modified tracked worktree or staged files
+- Author and path approved in a separately trusted maintainer policy
+- Staged single-file release artifact matching the reviewed bytes when --artifact is supplied
+
+```sh
+PATCHJURY_POLICY_FILE=/trusted/.patchjury/release-policy.json \
+PATCHJURY_CONTRACT_ADDRESS=0xYOUR_V2_ADDRESS \
+node /trusted/scripts/release-gate.mjs CASE_ID examples/review-ready/candidate.py --artifact .patchjury-output/candidate.py
+```
+
+The policy must be maintained separately from untrusted release inputs
+The protected workflow loads gate code and policy from main, checks out the candidate separately and makes release depend on successful verification
+It verifies the artifact hash again after the job handoff
+The workflow publishes only the reviewed single-file candidate artifact
+Other release files are not authorized by that decision
+
+## Local development
+
+```sh
 npm ci
 npm run dev
-npm run build
+```
+
+Configure VITE_PATCHJURY_CONTRACT_ADDRESS with the new v2 address after source equivalence is verified
+The production v1 address remains in the existing deployment settings until the verified upgrade is ready
+
+## Verification
+
+```sh
 npm test
-python -m unittest discover -s tests -p "test_*.py"
-
-# Check the exact contract source against the StudioNet schema endpoint
+python -m unittest discover -s tests -p test_contract.py
+npm run build
 npm run schema:check
+node scripts/verify-deployment.mjs 0xYOUR_V2_ADDRESS
 ```
 
-Development and production builds use `.env.development` and `.env.production` to point to the deployed StudioNet contract. To use a different deployment locally, copy `.env.example` to `.env.local` and set `VITE_PATCHJURY_CONTRACT_ADDRESS`. The default RPC is GenLayer StudioNet. The frontend holds no private keys.
+The schema command sends contract source to the official Studio service
+Automated contract tests use controlled web/model/GenVM doubles
+Historical live v1 verification is documented in LIVE-VERIFICATION.md and is not proof of v2 behavior
 
-The contract source is [`contracts/patchjury.py`](contracts/patchjury.py). StudioNet reports `patchjury-v1` from `get_protocol()` at the deployed address above. Build and publish `dist/` over HTTPS. Evidence files must be independently accessible to GenLayer validators. Three real cases have reached finalized verdicts and were independently read by the release gate; reproduction details are recorded in [LIVE-VERIFICATION.md](LIVE-VERIFICATION.md).
+## Limits
 
-If Studio shows `Could not load contract schema`, run `npm run schema:check` first. This queries StudioNet with the exact local source without deploying. If it succeeds, reopen the Contracts view, remove the stale Studio editor copy, import the file from `contracts/patchjury.py` again, and return to Run and Debug. Do not edit the first `Depends` line or replace its pinned runner hash. A successful schema check does not prove deployment or execution success.
-
-## CI gate
-
-Set `PATCHJURY_CONTRACT_ADDRESS` to the deployed v1 contract. Run the gate **from the target repository** at the exact release commit:
-
-```bash
-node /path/to/patchjury/scripts/release-gate.mjs REL-CASE-ID path/to/candidate-file
-```
-
-The target repository must have `genlayer-js` installed for the gate script or bundle the gate with its dependencies. [`examples/release-workflow.yml`](examples/release-workflow.yml) is an integration outline; adapt it to the target repository's layout and protect its release workflow with branch rules. Merely deploying PatchJury does not block releases in unrelated repositories.
-
-## Evidence and threat model
-
-- Every source is a raw GitHub URL with a full 40-character commit SHA from the declared repository. A content hash is stored at registration and rechecked by every validator. A force-pushed branch name cannot silently change the reviewed bytes.
-- The GitHub Actions API provides an independently fetched run status, conclusion, repository and head commit. It establishes that GitHub reports a successful workflow on this commit. It does not independently attest that the submitted test-report file contains that workflow's output; maintainers should link the actual workflow artifact or log in the report and protect the workflow configuration.
-- Source text is untrusted input to the prompt. The contract instructs the model to ignore instructions in evidence, constrains outputs to three criterion enums and verifies submitted quotes occur in fetched source text.
-- The leader's decision is never accepted merely because it is well formed. Validators fetch evidence again and independently derive the three criterion values. Disagreement can make a transaction undetermined; that does not create a passing verdict.
-- No wallet can edit an existing case or verdict. A revision uses a new case ID and links to its predecessor. A case's `author` is the submitting wallet, **not proof of GitHub ownership**.
-- The UI and gate use finalized state. A submitted EVM transaction, provisional acceptance, or timeout alone is not proof that an Intelligent Contract write succeeded.
-- This review evaluates the submitted public code excerpt, test report and workflow-run metadata against the supplied policy. It is not a full vulnerability audit, proof that the report faithfully transcribes the CI log, or a guarantee that the release is safe. Repository owners should pair it with deterministic tests, code review and protected branches.
-
-## Reviewer path after deployment
-
-1. Open the public app and inspect a real release request's policy, three Git commit URLs, SHA-256 commitments and GitHub Actions run.
-2. Run a review with a funded StudioNet wallet. Save the GenLayer transaction ID. Wait for finalization and confirm a successful GenVM return.
-3. Refresh the page: the verdict and criterion receipts should still come from the contract.
-4. Repeat with a candidate that violates scope and one with inadequate test evidence. Confirm `BLOCKED` and `INSUFFICIENT` rather than an unconditional success.
-5. Run the gate on the exact candidate commit/file to observe `READY` exit 0. Change the local file, checked-out commit, case ID, or verdict and observe exit 1.
-
-Exact deployed contract, source commit, successful transaction hashes and reproducible samples must be added to this section **after** live execution. Offline compilation alone is not evidence of consensus behavior.
-
-## References
-
-- [GenLayer Equivalence Principle](https://docs.genlayer.com/developers/intelligent-contracts/equivalence-principle)
-- [Web access](https://docs.genlayer.com/developers/intelligent-contracts/features/web-access)
-- [Writing to Intelligent Contracts](https://docs.genlayer.com/developers/decentralized-applications/writing-data)
-- [Finality](https://docs.genlayer.com/understand-genlayer-protocol/core-concepts/optimistic-democracy/finality)
+The contract inspects bounded complete source files, each at most 12 KB
+It assesses one candidate file rather than every changed file in a commit
+GitHub API and StudioNet availability affect evidence retrieval and consensus latency
+The workflow and policy must be protected by the repository adopting the release gate
+A public verdict does not prevent releases made outside that adopted workflow

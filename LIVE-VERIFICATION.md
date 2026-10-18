@@ -37,3 +37,25 @@ No transaction was sent by the agent during these gate checks. Local test
 doubles described in TEST-REPORT.md remain separate from these live results.
 Mobile viewport verification and adversarial live consensus testing beyond
 these three cases are not established by this report.
+
+## Historical receipts recovered on 2026-10-18
+
+Read-only Studio RPC queries recovered and independently checked the six
+registration/review transactions below All have FINALIZED status and a successful
+GenVM return The final decisions were also reread from contract state
+
+| Case | Registration transaction | Review transaction |
+| --- | --- | --- |
+| REL-RETRY-CAP-001 | 0xd8e7bbf104092ec68e156dbc9cd296d7e08cc0e13a6da06048c4e8d81ba3c163 | 0xff14e8ff5974ba886ac443c1bd30d7ea194ea6c3b726865dcfd565312720a173 |
+| REL-RETRY-BLOCKED-001 | 0x0fc24c957c4c9d676001b65097757855b297dc08ab807078c2918e567a78f375 | 0x55a83ddc2f12463fd6216cccc91f84ec7845ce15de052abd0a5f777aa321d0ce |
+| REL-RETRY-INSUFFICIENT-001 | 0x7d12f8c65bdc3dcae034068a0e02f9ab77290425be2e99714dfcfd31b2bd7917 | 0x4b123f71cb55587b09e30beba06fc23ad213e693c94068227efde15d871f36e1 |
+
+Exact deployed v1 contract bytes match contracts/patchjury.py at commit
+71fbbefba53df53ca6ff48896340889c8c61d64b
+SHA-256 ff8f3d650f59cd78b0111984e5828d9e358414b214d6e53fe42793f8cc5d722a
+
+Machine-readable receipt excerpts and source comparison are in
+`docs/verification/v1-finalized-receipts.json` and
+`docs/verification/v1-source-equivalence.json`
+
+These are historical v1 results and do not establish v2 correctness

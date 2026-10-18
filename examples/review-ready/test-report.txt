@@ -1,15 +1,3 @@
-PatchJury release evidence: capped retry delay
-
-Scope: the complete one-function candidate.py file in this directory.
-Release requirement: for non-negative integer retry attempts 0 through 10,
-return 100 * (2 ** attempt) milliseconds, capped at 800 milliseconds.
-Preserve the function name and its one-argument signature. No I/O, imports,
-dependencies or other behavior are required in the candidate.
-
-Command executed locally:
-python examples/review-ready/test_retry.py
-
-Observed output:
 PASS retry_delay_ms(0) == 100
 PASS retry_delay_ms(1) == 200
 PASS retry_delay_ms(2) == 400
@@ -17,17 +5,3 @@ PASS retry_delay_ms(3) == 800
 PASS retry_delay_ms(4) == 800
 PASS retry_delay_ms(10) == 800
 6/6 policy assertions passed
-
-Interpretation: attempts 0, 1, 2 and 3 preserve the baseline behavior. Attempts
-4 and 10 exercise the previously unbounded branch and confirm the cap.
-The test imports and invokes the candidate file directly; no mocked function
-or network service is involved.
-
-CI reproduction: .github/workflows/review-evidence.yml checks out this commit,
-sets up Python 3.12, and runs the exact same test command. The separately
-submitted GitHub Actions run API URL must identify a successful run on the
-same commit as candidate.py and this report. This checked-in report documents
-the observed local run; the public CI log independently shows its own output.
-
-Limits: this is a narrow deterministic release-policy test, not a security
-audit. Inputs outside the stated attempt range are outside this review.

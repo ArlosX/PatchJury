@@ -8,6 +8,9 @@ export type Criterion = "PASS" | "FAIL" | "UNKNOWN"
 export type Decision = "READY" | "BLOCKED" | "INSUFFICIENT"
 
 export type ReleaseCase = {
+  protocol_version: string
+  scope_mode: string
+  provenance: string
   case_id: string
   title: string
   repo_url: string
@@ -27,6 +30,12 @@ export type ReleaseCase = {
 }
 
 export type Verdict = {
+  protocol_version: string
+  scope_mode: string
+  provenance: string
+  regression_authenticated: boolean
+  ci_check_url: string
+  supports: Record<string, {source:string; start_line:number; end_line:number; quote:string; reason:string; basis:string}>
   case_id: string
   case_commitment: string
   decision: Decision
@@ -63,7 +72,7 @@ declare global {
 export const validAddress = (value: string): value is `0x${string}` => /^0x[a-fA-F0-9]{40}$/.test(value)
 
 function provider(): EthereumProvider {
-  if (!window.ethereum) throw new Error("Install an EVM wallet to submit a GenLayer transaction.")
+  if (!window.ethereum) throw new Error("Install an EVM wallet to submit a GenLayer transaction")
   return window.ethereum
 }
 
@@ -76,7 +85,7 @@ export async function currentAccount(): Promise<string> {
 export async function connectWallet(): Promise<string> {
   const wallet = provider()
   const accounts = await wallet.request({ method: "eth_requestAccounts" }) as string[]
-  if (!accounts?.[0]) throw new Error("Select a wallet account to continue.")
+  if (!accounts?.[0]) throw new Error("Select a wallet account to continue")
   const expected = `0x${chainId.toString(16)}`
   const current = await wallet.request({ method: "eth_chainId" }) as string
   if (current.toLowerCase() !== expected.toLowerCase()) {
@@ -98,10 +107,10 @@ export async function connectWallet(): Promise<string> {
   }
   const finalChain = await wallet.request({ method: "eth_chainId" })
   if (typeof finalChain !== "string" || finalChain.toLowerCase() !== expected.toLowerCase()) {
-    throw new Error("Wallet is not connected to GenLayer StudioNet. Switch networks before submitting.")
+    throw new Error("Wallet is not connected to GenLayer StudioNet Switch networks before submitting")
   }
   const active = await wallet.request({ method: "eth_accounts" }) as string[]
-  if (!validAddress(active?.[0] || "")) throw new Error("No valid wallet account is connected.")
+  if (!validAddress(active?.[0] || "")) throw new Error("No valid wallet account is connected")
   return active[0]
 }
 
@@ -138,7 +147,7 @@ export class PatchJuryClient {
   private readonly clientPromise: Promise<ReturnType<(typeof import("genlayer-js"))["createClient"]>>
 
   constructor(account?: string) {
-    if (!validAddress(contractAddress)) throw new Error("PatchJury contract is not configured yet.")
+    if (!validAddress(contractAddress)) throw new Error("PatchJury contract is not configured yet")
     this.address = contractAddress
     this.clientPromise = Promise.all([import("genlayer-js"), import("genlayer-js/chains")]).then(([sdk, chains]) =>
       sdk.createClient({ chain: chains.studionet, endpoint: rpcEndpoint, ...(account ? { account: account as `0x${string}` } : {}) }),
@@ -157,20 +166,15 @@ export class PatchJuryClient {
     const receipt = await client.waitForTransactionReceipt({ hash, status: "FINALIZED" as never, retries: 120, interval: 5000 }) as StudioReceipt
     const status = String(receipt.status_name || receipt.statusName || receipt.status || "UNKNOWN").toUpperCase()
     if (status !== "FINALIZED" || !successfulReturn(receipt)) {
-      throw new Error(`Transaction ${hash} did not finish successfully (${status}). Inspect it before retrying.`)
+      throw new Error(`Transaction ${hash} did not finish successfully (${status}) Inspect it before retrying`)
     }
     return String(hash)
   }
 
   protocol(): Promise<Protocol> { return this.read("get_protocol") as Promise<Protocol> }
 
-  async cases(): Promise<ReleaseCase[]> {
-    const value = await this.read("get_cases") as Record<string, ReleaseCase>
-    return Object.values(value || {}).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
-  }
-
-  async verdicts(): Promise<Record<string, Verdict>> {
-    return await this.read("get_verdicts") as Record<string, Verdict>
+  async page(offset=0): Promise<{cases:ReleaseCase[];verdicts:Record<string,Verdict>;next_offset:number;has_more:boolean;total:number}> {
+    return this.read("get_registry_page", [offset,25]) as Promise<{cases:ReleaseCase[];verdicts:Record<string,Verdict>;next_offset:number;has_more:boolean;total:number}>
   }
 
   async case(caseId: string): Promise<ReleaseCase> {
@@ -200,11 +204,11 @@ export async function sha256FromUrl(url: string): Promise<string> {
   const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(20000) })
   if (!response.ok) throw new Error(`Source returned HTTP ${response.status}: ${url}`)
   const bytes = await response.arrayBuffer()
-  if (bytes.byteLength === 0 || bytes.byteLength > 12000) throw new Error("Source must contain 1–12,000 bytes.")
+  if (bytes.byteLength === 0 || bytes.byteLength > 12000) throw new Error("Source must contain 1–12,000 bytes")
   let text: string
   try { text = new TextDecoder("utf-8", { fatal: true }).decode(bytes) }
-  catch { throw new Error("Source must be valid UTF-8 text.") }
-  if (!text.trim()) throw new Error("Source must contain non-whitespace text.")
+  catch { throw new Error("Source must be valid UTF-8 text") }
+  if (!text.trim()) throw new Error("Source must contain non-whitespace text")
   const hash = await crypto.subtle.digest("SHA-256", bytes)
   return Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, "0")).join("")
 }

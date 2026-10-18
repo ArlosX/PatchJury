@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "repo_url": "https://github.com/ArlosX/PatchJury",
+  "contract_address": "DEPLOY_V2_BEFORE_RELEASE",
+  "authorized_authors": ["0x04eB0c501Adcf053901E2910862C89803E7b5552"],
+  "candidate_paths": ["examples/review-ready/candidate.py"],
+  "scope": "candidate-file"
+}

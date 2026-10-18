@@ -29,3 +29,5 @@ test('source HTTP failure rejected',async()=>{const h=harness({fetchResponse:{ok
 
 test('invalid UTF-8 source rejected',async()=>{const h=harness({fetchResponse:{ok:true,arrayBuffer:async()=>new Uint8Array([255]).buffer}});await assert.rejects(h.sha256FromUrl('https://example.test'),/UTF-8/)});
 test('whitespace-only source rejected',async()=>{const h=harness({fetchResponse:{ok:true,arrayBuffer:async()=>new TextEncoder().encode('   ').buffer}});await assert.rejects(h.sha256FromUrl('https://example.test'),/non-whitespace/)});
+const{test:paginationTest}=require('node:test');
+paginationTest('registry read requests one bounded page instead of full history',async()=>{const page={cases:[],verdicts:{},next_offset:25,has_more:true,total:2000};const h=harness({readValue:page});const result=await new h.PatchJuryClient().page(0);assert.equal(result.total,2000);assert.equal(h.calls.length,1);assert.equal(h.calls[0].functionName,'get_registry_page');assert.deepEqual(Array.from(h.calls[0].args),[0,25])});
